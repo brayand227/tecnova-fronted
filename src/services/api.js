@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Cambia esto: de localhost a tu URL de Railway
 const API_URL = 'https://tecnova-backend-production.up.railway.app/api';
 
 const api = axios.create({
@@ -7,7 +8,6 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: false
 });
 
 // Interceptor para añadir token
