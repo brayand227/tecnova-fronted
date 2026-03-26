@@ -5,11 +5,10 @@ import api from '../services/api';
 const ProductoDetalle = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState('');
-  const [selectedImage, setSelectedImage] = useState('');
+  const [currentImage, setCurrentImage] = useState(''); // 👈 Estado para la imagen actual
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
@@ -20,21 +19,24 @@ const ProductoDetalle = () => {
     try {
       const response = await api.get(`/productos/${id}`);
       const data = response.data;
-
       setProducto(data);
-      setSelectedImage(data.imagenUrl);
-
-      if (data.coloresDisponibles?.length > 0) {
+      
+      // Establecer imagen inicial
+      setCurrentImage(data.imagenUrl);
+      
+      // Seleccionar primer color por defecto si hay colores disponibles
+      if (data.coloresDisponibles && data.coloresDisponibles.length > 0) {
         setSelectedColor(data.coloresDisponibles[0]);
+        // Si hay imagen específica para el primer color, usarla
+        if (data.imagenesPorColor && data.imagenesPorColor[data.coloresDisponibles[0]]) {
+          setCurrentImage(data.imagenesPorColor[data.coloresDisponibles[0]]);
+        }
       }
 
+      // Productos relacionados
       if (data.categoria?.id) {
         const relatedRes = await api.get(`/productos/categoria/${data.categoria.id}`);
-        setRelatedProducts(
-          relatedRes.data
-            .filter(p => p.id !== parseInt(id))
-            .slice(0, 4)
-        );
+        setRelatedProducts(relatedRes.data.filter(p => p.id !== parseInt(id)).slice(0, 4));
       }
     } catch (error) {
       console.error('Error cargando producto:', error);
@@ -44,14 +46,20 @@ const ProductoDetalle = () => {
     }
   };
 
-  // Función para determinar si un color es claro (para texto oscuro)
-  const isLightColor = (color) => {
-    const hex = color.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness > 155;
+  // Función para cambiar color y actualizar imagen
+  const handleColorChange = (color) => {
+    setSelectedColor(color);
+    
+    // Buscar si hay imagen específica para este color
+    const colorImage = producto?.imagenesPorColor?.[color];
+    
+    if (colorImage) {
+      // Si hay imagen específica, usarla
+      setCurrentImage(colorImage);
+    } else {
+      // Si no hay imagen específica, usar la imagen principal
+      setCurrentImage(producto?.imagenUrl);
+    }
   };
 
   // Función para obtener nombre del color
@@ -110,7 +118,7 @@ const ProductoDetalle = () => {
           gap: '60px',
           marginBottom: '60px'
         }}>
-          {/* GALERÍA */}
+          {/* GALERÍA - Imagen que cambia según color seleccionado */}
           <div>
             <div style={{
               background: '#f5f5f7',
@@ -122,42 +130,24 @@ const ProductoDetalle = () => {
               alignItems: 'center',
               minHeight: '400px'
             }}>
-              <img
-                src={selectedImage}
+              <img 
+                src={currentImage || producto.imagenUrl} 
                 alt={producto.nombre}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '400px',
-                  objectFit: 'contain'
+                style={{ 
+                  maxWidth: '100%', 
+                  maxHeight: '400px', 
+                  objectFit: 'contain',
+                  transition: 'transform 0.3s ease'
                 }}
               />
             </div>
 
-            {/* Miniaturas */}
-            <div style={{ display: 'flex', gap: '12px', overflowX: 'auto' }}>
-              <div
-                onClick={() => setSelectedImage(producto.imagenUrl)}
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  background: '#f5f5f7',
-                  borderRadius: '12px',
-                  padding: '8px',
-                  cursor: 'pointer',
-                  border: selectedImage === producto.imagenUrl ? '2px solid #0066cc' : '2px solid transparent'
-                }}
-              >
-                <img
-                  src={producto.imagenUrl}
-                  alt="Principal"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                />
-              </div>
-
-              {producto.imagenesAdicionales?.map((img, index) => (
+            {/* Miniaturas - Mostrar imágenes adicionales */}
+            {(producto.imagenesAdicionales?.length > 0 || (producto.imagenesPorColor?.[selectedColor] && producto.imagenesPorColor[selectedColor] !== currentImage)) && (
+              <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', marginTop: '16px' }}>
+                {/* Imagen principal como miniatura */}
                 <div
-                  key={index}
-                  onClick={() => setSelectedImage(img)}
+                  onClick={() => setCurrentImage(producto.imagenUrl)}
                   style={{
                     width: '80px',
                     height: '80px',
@@ -165,17 +155,63 @@ const ProductoDetalle = () => {
                     borderRadius: '12px',
                     padding: '8px',
                     cursor: 'pointer',
-                    border: selectedImage === img ? '2px solid #0066cc' : '2px solid transparent'
+                    border: currentImage === producto.imagenUrl ? '2px solid #0066cc' : '2px solid transparent',
+                    transition: 'all 0.2s'
                   }}
                 >
                   <img
-                    src={img}
-                    alt={`Vista ${index + 1}`}
+                    src={producto.imagenUrl}
+                    alt="Principal"
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
                 </div>
-              ))}
-            </div>
+
+                {/* Imagen del color seleccionado (si es diferente a la principal) */}
+                {producto.imagenesPorColor?.[selectedColor] && producto.imagenesPorColor[selectedColor] !== producto.imagenUrl && (
+                  <div
+                    onClick={() => setCurrentImage(producto.imagenesPorColor[selectedColor])}
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      background: '#f5f5f7',
+                      borderRadius: '12px',
+                      padding: '8px',
+                      cursor: 'pointer',
+                      border: currentImage === producto.imagenesPorColor[selectedColor] ? '2px solid #0066cc' : '2px solid transparent'
+                    }}
+                  >
+                    <img
+                      src={producto.imagenesPorColor[selectedColor]}
+                      alt={`Color ${selectedColor}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                  </div>
+                )}
+
+                {/* Imágenes adicionales del producto */}
+                {producto.imagenesAdicionales?.map((img, index) => (
+                  <div
+                    key={img.id}
+                    onClick={() => setCurrentImage(img.url)}
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      background: '#f5f5f7',
+                      borderRadius: '12px',
+                      padding: '8px',
+                      cursor: 'pointer',
+                      border: currentImage === img ? '2px solid #0066cc' : '2px solid transparent'
+                    }}
+                  >
+                    <img
+                      src={img.url}
+                      alt={`Vista ${index + 1}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* INFO PRODUCTO */}
@@ -211,73 +247,85 @@ const ProductoDetalle = () => {
                   fontWeight: '500',
                   color: '#1d1d1f'
                 }}>
-                  Color: <span style={{ color: '#0066cc' }}>{getColorName(selectedColor) || 'Selecciona una opción'}</span>
+                  Color: <span style={{ color: '#0066cc' }}>{getColorName(selectedColor)}</span>
                 </h3>
                 <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                  {producto.coloresDisponibles.map((color, index) => (
-                    <div
-                      key={index}
-                      onClick={() => setSelectedColor(color)}
-                      style={{
-                        position: 'relative',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {/* Círculo de color */}
+                  {producto.coloresDisponibles.map((color, index) => {
+                    // Función para determinar si un color es claro
+                    const isLightColor = (hexColor) => {
+                      const hex = hexColor.replace('#', '');
+                      const r = parseInt(hex.substring(0, 2), 16);
+                      const g = parseInt(hex.substring(2, 4), 16);
+                      const b = parseInt(hex.substring(4, 6), 16);
+                      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                      return brightness > 155;
+                    };
+
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => handleColorChange(color)}
+                        style={{
+                          position: 'relative',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {/* Círculo de color */}
+                        <div style={{
+                          width: '56px',
+                          height: '56px',
+                          borderRadius: '50%',
+                          background: color,
+                          border: selectedColor === color ? '3px solid #0066cc' : '2px solid #e5e5e7',
+                          boxShadow: selectedColor === color 
+                            ? '0 4px 12px rgba(0,102,204,0.3)' 
+                            : '0 2px 8px rgba(0,0,0,0.1)',
+                          transition: 'all 0.2s ease',
+                          transform: selectedColor === color ? 'scale(1.1)' : 'scale(1)',
+                          marginBottom: '8px'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (selectedColor !== color) {
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedColor !== color) {
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                          }
+                        }}
+                      />
+                      
+                      {/* Indicador de selección (check) */}
+                      {selectedColor === color && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          color: isLightColor(color) ? '#000' : '#fff',
+                          fontSize: '20px',
+                          fontWeight: 'bold',
+                          pointerEvents: 'none'
+                        }}>
+                          ✓
+                        </div>
+                      )}
+                      
+                      {/* Nombre del color */}
                       <div style={{
-                        width: '56px',
-                        height: '56px',
-                        borderRadius: '50%',
-                        background: color,
-                        border: selectedColor === color ? '3px solid #0066cc' : '2px solid #e5e5e7',
-                        boxShadow: selectedColor === color 
-                          ? '0 4px 12px rgba(0,102,204,0.3)' 
-                          : '0 2px 8px rgba(0,0,0,0.1)',
-                        transition: 'all 0.2s ease',
-                        transform: selectedColor === color ? 'scale(1.1)' : 'scale(1)',
-                        marginBottom: '8px'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (selectedColor !== color) {
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (selectedColor !== color) {
-                          e.currentTarget.style.transform = 'scale(1)';
-                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                        }
-                      }}
-                    />
-                    
-                    {/* Indicador de selección (check) */}
-                    {selectedColor === color && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        color: isLightColor(color) ? '#000' : '#fff',
-                        fontSize: '20px',
-                        fontWeight: 'bold',
-                        pointerEvents: 'none'
+                        fontSize: '12px',
+                        textAlign: 'center',
+                        color: selectedColor === color ? '#0066cc' : '#86868b',
+                        fontWeight: selectedColor === color ? '500' : 'normal'
                       }}>
-                        ✓
+                        {getColorName(color)}
                       </div>
-                    )}
-                    
-                    {/* Nombre del color */}
-                    <div style={{
-                      fontSize: '12px',
-                      textAlign: 'center',
-                      color: selectedColor === color ? '#0066cc' : '#86868b',
-                      fontWeight: selectedColor === color ? '500' : 'normal'
-                    }}>
-                      {getColorName(color)}
                     </div>
-                  </div>
-                  ))}
+                  );
+                })}
                 </div>
               </div>
             )}
@@ -327,7 +375,7 @@ const ProductoDetalle = () => {
                 onClick={() => {
                   const number = "573207512431";
                   
-                  // Construir mensaje detallado con color incluido usando getColorName
+                  // Construir mensaje detallado con color incluido
                   let text = `Hola, me interesa el producto: *${producto.nombre}*\n`;
                   text += `💰 Precio: $${producto.precio}\n`;
                   if (selectedColor) {

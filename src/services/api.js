@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Cambia esto: de localhost a tu URL de Railway
-const API_URL = 'https://tecnova-backend-production.up.railway.app/api';
+const API_URL = 'http://localhost:8080/api'; 
 
 const api = axios.create({
   baseURL: API_URL,

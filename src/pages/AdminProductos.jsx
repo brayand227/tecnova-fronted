@@ -3,8 +3,10 @@ import api from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ImageUpload from '../components/ImageUpload';
+import ImageGalleryUpload from '../components/ImageGalleryUpload';
 
 const AdminProductos = () => {
+  const [nuevoColor, setNuevoColor] = useState('#0066cc');
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,6 +14,7 @@ const AdminProductos = () => {
   const [showForm, setShowForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -20,12 +23,13 @@ const AdminProductos = () => {
     imagenUrl: '',
     imagenesAdicionales: [],
     coloresDisponibles: [],
+    imagenesPorColor: {},
     destacado: false,
     stock: 0,
     sku: '',
     especificaciones: ''
   });
-  
+
   const { isAdmin } = useAuth();
   const navigate = useNavigate();
 
@@ -44,75 +48,14 @@ const AdminProductos = () => {
         api.get('/admin/productos'),
         api.get('/categorias')
       ]);
-      
       setProductos(productosRes.data);
       setCategorias(categoriasRes.data);
       setErrorMessage('');
     } catch (error) {
+      console.error('Error cargando datos:', error);
       setErrorMessage('Error al cargar los datos');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    try {
-      const productoData = {
-        ...formData,
-        precio: parseFloat(formData.precio),
-        stock: parseInt(formData.stock) || 0,
-        categoria: formData.categoria?.id ? { id: parseInt(formData.categoria.id) } : null
-      };
-
-      if (editingProduct) {
-        await api.put(`/admin/productos/${editingProduct.id}`, productoData);
-        setSuccessMessage('Producto actualizado correctamente');
-      } else {
-        await api.post('/admin/productos', productoData);
-        setSuccessMessage('Producto creado correctamente');
-      }
-      
-      setTimeout(() => setSuccessMessage(''), 3000);
-      loadData();
-      resetForm();
-      setShowForm(false);
-    } catch (error) {
-      setErrorMessage('Error al guardar el producto');
-      setTimeout(() => setErrorMessage(''), 3000);
-    }
-  };
-
-  const handleEdit = (producto) => {
-    setEditingProduct(producto);
-    setFormData({
-      nombre: producto.nombre,
-      descripcion: producto.descripcion || '',
-      precio: producto.precio,
-      categoria: producto.categoria || { id: '' },
-      imagenUrl: producto.imagenUrl || '',
-      imagenesAdicionales: producto.imagenesAdicionales || [],
-      coloresDisponibles: producto.coloresDisponibles || [],
-      destacado: producto.destacado || false,
-      stock: producto.stock || 0,
-      sku: producto.sku || '',
-      especificaciones: producto.especificaciones || ''
-    });
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('¿Estás seguro de eliminar este producto?')) {
-      try {
-        await api.delete(`/admin/productos/${id}`);
-        loadData();
-        setSuccessMessage('Producto eliminado correctamente');
-        setTimeout(() => setSuccessMessage(''), 3000);
-      } catch (error) {
-        setErrorMessage('Error al eliminar el producto');
-        setTimeout(() => setErrorMessage(''), 3000);
-      }
     }
   };
 
@@ -126,6 +69,7 @@ const AdminProductos = () => {
       imagenUrl: '',
       imagenesAdicionales: [],
       coloresDisponibles: [],
+      imagenesPorColor: {},
       destacado: false,
       stock: 0,
       sku: '',
@@ -133,21 +77,104 @@ const AdminProductos = () => {
     });
   };
 
-  // Colores predefinidos estilo Apple
-  const appleColors = [
-    { code: '#000000', name: 'Negro' },
-    { code: '#ffffff', name: 'Blanco' },
-    { code: '#1d1d1f', name: 'Gris espacial' },
-    { code: '#86868b', name: 'Gris' },
-    { code: '#0066cc', name: 'Azul' },
-    { code: '#ff3b30', name: 'Rojo' },
-    { code: '#34c759', name: 'Verde' },
-    { code: '#5856d6', name: 'Púrpura' },
-    { code: '#ff9500', name: 'Naranja' },
-    { code: '#af52de', name: 'Morado' },
-    { code: '#ff2d55', name: 'Rosa' },
-    { code: '#a2845e', name: 'Oro' }
-  ];
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      const productoData = {
+        ...formData,
+        precio: parseFloat(formData.precio),
+        stock: parseInt(formData.stock) || 0,
+        categoria: formData.categoria?.id
+          ? { id: parseInt(formData.categoria.id) }
+          : null
+      };
+
+      if (editingProduct) {
+        await api.put(`/admin/productos/${editingProduct.id}`, productoData);
+        setSuccessMessage('✅ Producto actualizado exitosamente');
+      } else {
+        await api.post('/admin/productos', productoData);
+        setSuccessMessage('✅ Producto creado exitosamente');
+      }
+
+      loadData();
+      resetForm();
+      setShowForm(false);
+      
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error guardando producto:', error);
+      setErrorMessage('Error al guardar: ' + (error.response?.data || 'Intenta de nuevo'));
+    }
+  };
+
+  const handleEdit = (producto) => {
+    setEditingProduct(producto);
+    setFormData({
+      nombre: producto.nombre || '',
+      descripcion: producto.descripcion || '',
+      precio: producto.precio || '',
+      categoria: producto.categoria || { id: '' },
+      imagenUrl: producto.imagenUrl || '',
+      imagenesAdicionales: producto.imagenesAdicionales || [],
+      coloresDisponibles: producto.coloresDisponibles || [],
+      imagenesPorColor: producto.imagenesPorColor || {},
+      destacado: producto.destacado || false,
+      stock: producto.stock || 0,
+      sku: producto.sku || '',
+      especificaciones: producto.especificaciones || ''
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Estás seguro de eliminar este producto?')) return;
+    
+    try {
+      await api.delete(`/admin/productos/${id}`);
+      setSuccessMessage('✅ Producto eliminado');
+      loadData();
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      alert('Error al eliminar: ' + (error.response?.data || 'Intenta de nuevo'));
+    }
+  };
+
+  const agregarColor = () => {
+    const color = nuevoColor.trim();
+
+    if (!/^#[0-9A-Fa-f]{6}$/i.test(color)) {
+      alert('Color inválido. Usa formato HEX (#RRGGBB)');
+      return;
+    }
+
+    setFormData(prev => {
+      if (prev.coloresDisponibles.includes(color)) return prev;
+      return {
+        ...prev,
+        coloresDisponibles: [...prev.coloresDisponibles, color]
+      };
+    });
+
+    setNuevoColor('#0066cc');
+  };
+
+  const eliminarColor = (colorAEliminar) => {
+    setFormData(prev => {
+      const nuevosColores = prev.coloresDisponibles.filter(c => c !== colorAEliminar);
+      const nuevasImagenesPorColor = { ...prev.imagenesPorColor };
+      delete nuevasImagenesPorColor[colorAEliminar];
+      
+      return {
+        ...prev,
+        coloresDisponibles: nuevosColores,
+        imagenesPorColor: nuevasImagenesPorColor
+      };
+    });
+  };
 
   if (loading) {
     return (
@@ -158,101 +185,82 @@ const AdminProductos = () => {
   }
 
   return (
-    <div style={{ padding: '100px 24px', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Mensajes de éxito/error */}
-      {successMessage && (
-        <div style={{
-          backgroundColor: '#34c759',
-          color: 'white',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          marginBottom: '20px',
-          position: 'fixed',
-          top: '80px',
-          right: '24px',
-          zIndex: 1000,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-        }}>
-          {successMessage}
+    <div style={{ padding: '100px 24px 48px', minHeight: '100vh', background: '#f5f5f7' }}>
+      <div className="container">
+        {/* Mensajes */}
+        {successMessage && (
+          <div style={{
+            background: '#e5f5e5',
+            color: '#00a400',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            marginBottom: '20px',
+            textAlign: 'center'
+          }}>
+            {successMessage}
+          </div>
+        )}
+        
+        {errorMessage && (
+          <div style={{
+            background: '#fff0f0',
+            color: '#ff3b30',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            marginBottom: '20px',
+            textAlign: 'center'
+          }}>
+            {errorMessage}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+          <h1>Gestión de Productos</h1>
+          <button 
+            onClick={() => {
+              resetForm();
+              setShowForm(!showForm);
+            }}
+            className="btn btn-primary"
+          >
+            {showForm ? 'Cancelar' : '+ Nuevo Producto'}
+          </button>
         </div>
-      )}
 
-      {errorMessage && (
-        <div style={{
-          backgroundColor: '#ff3b30',
-          color: 'white',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          marginBottom: '20px',
-          position: 'fixed',
-          top: '80px',
-          right: '24px',
-          zIndex: 1000,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-        }}>
-          {errorMessage}
-        </div>
-      )}
-
-      {/* Header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '40px'
-      }}>
-        <h1 style={{ fontSize: '32px', margin: 0 }}>Administrar Productos</h1>
-        <button
-          className="btn btn-primary"
-          onClick={() => {
-            resetForm();
-            setShowForm(!showForm);
-          }}
-        >
-          {showForm ? 'Cancelar' : '➕ Nuevo Producto'}
-        </button>
-      </div>
-
-      {/* Formulario */}
-      {showForm && (
-        <div style={{
-          background: '#f5f5f7',
-          borderRadius: '24px',
-          padding: '32px',
-          marginBottom: '40px'
-        }}>
-          <h2 style={{ fontSize: '24px', marginBottom: '24px' }}>
-            {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
-          </h2>
-
-          <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gap: '24px' }}>
-              {/* Información básica */}
+        {/* Formulario */}
+        {showForm && (
+          <div className="card" style={{ marginBottom: '32px', padding: '24px' }}>
+            <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>
+              {editingProduct ? 'Editar Producto' : 'Nuevo Producto'}
+            </h2>
+            
+            <form onSubmit={handleSubmit}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                {/* Nombre */}
                 <div>
-                  <label className="form-label">Nombre del producto *</label>
+                  <label className="form-label">Nombre *</label>
                   <input
                     type="text"
                     className="form-input"
                     value={formData.nombre}
-                    onChange={e => setFormData({...formData, nombre: e.target.value})}
+                    onChange={(e) => setFormData({...formData, nombre: e.target.value})}
                     required
                   />
                 </div>
-
+                
+                {/* SKU */}
                 <div>
-                  <label className="form-label">SKU (opcional)</label>
+                  <label className="form-label">SKU (Código)</label>
                   <input
                     type="text"
                     className="form-input"
                     value={formData.sku}
-                    onChange={e => setFormData({...formData, sku: e.target.value})}
+                    onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                    placeholder="PROD-001"
                   />
                 </div>
-              </div>
-
-              {/* Precio y stock */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                
+                {/* Precio */}
                 <div>
                   <label className="form-label">Precio *</label>
                   <input
@@ -260,257 +268,130 @@ const AdminProductos = () => {
                     step="0.01"
                     className="form-input"
                     value={formData.precio}
-                    onChange={e => setFormData({...formData, precio: e.target.value})}
+                    onChange={(e) => setFormData({...formData, precio: e.target.value})}
                     required
                   />
                 </div>
-
+                
+                {/* Stock */}
                 <div>
                   <label className="form-label">Stock</label>
                   <input
                     type="number"
                     className="form-input"
                     value={formData.stock}
-                    onChange={e => setFormData({...formData, stock: e.target.value})}
+                    onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                  />
+                </div>
+                
+                {/* Categoría */}
+                <div>
+                  <label className="form-label">Categoría</label>
+                  <select
+                    className="form-input"
+                    value={formData.categoria?.id || ''}
+                    onChange={(e) => setFormData({
+                      ...formData, 
+                      categoria: e.target.value ? { id: parseInt(e.target.value) } : null
+                    })}
+                  >
+                    <option value="">Sin categoría</option>
+                    {categorias.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Destacado */}
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.destacado}
+                      onChange={(e) => setFormData({...formData, destacado: e.target.checked})}
+                      style={{ width: '18px', height: '18px' }}
+                    />
+                    <span>Producto destacado</span>
+                  </label>
+                </div>
+
+                {/* Descripción */}
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label className="form-label">Descripción</label>
+                  <textarea
+                    className="form-input"
+                    value={formData.descripcion}
+                    onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
+                    rows="3"
+                  />
+                </div>
+
+                {/* Especificaciones */}
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label className="form-label">Especificaciones técnicas</label>
+                  <textarea
+                    className="form-input"
+                    value={formData.especificaciones}
+                    onChange={(e) => setFormData({...formData, especificaciones: e.target.value})}
+                    rows="4"
+                    placeholder="Pantalla: 6.1&#34;, Procesador: A16, Batería: 24h..."
                   />
                 </div>
               </div>
 
-              {/* Categoría */}
-              <div>
-                <label className="form-label">Categoría</label>
-                <select
-                  className="form-input"
-                  value={formData.categoria?.id || ''}
-                  onChange={e => setFormData({
-                    ...formData, 
-                    categoria: { id: e.target.value }
-                  })}
-                >
-                  <option value="">Seleccionar categoría</option>
-                  {categorias.map(cat => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Descripción */}
-              <div>
-                <label className="form-label">Descripción</label>
-                <textarea
-                  className="form-input"
-                  rows="4"
-                  value={formData.descripcion}
-                  onChange={e => setFormData({...formData, descripcion: e.target.value})}
-                />
-              </div>
-
-              {/* Especificaciones */}
-              <div>
-                <label className="form-label">Especificaciones</label>
-                <textarea
-                  className="form-input"
-                  rows="4"
-                  value={formData.especificaciones}
-                  onChange={e => setFormData({...formData, especificaciones: e.target.value})}
-                  placeholder="Ej: Procesador: Intel i7&#10;Memoria RAM: 16GB&#10;Almacenamiento: 512GB SSD"
-                />
-              </div>
-
-              {/* 🎨 SELECTOR DE COLORES ESTILO APPLE */}
-              <div style={{ gridColumn: '1 / -1', marginTop: '20px' }}>
+              {/* 🎨 COLORES DISPONIBLES */}
+              <div style={{ marginTop: '24px', padding: '16px', background: '#fafafc', borderRadius: '12px' }}>
                 <label className="form-label">Colores disponibles</label>
-                <p style={{ fontSize: '12px', color: '#86868b', marginBottom: '12px' }}>
-                  Ingresa códigos de color HEX (ej: #FF0000 para rojo, #000000 para negro)
-                </p>
-                
-                {/* Lista de colores agregados */}
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '16px' }}>
-                  {formData.coloresDisponibles?.map((color, index) => (
-                    <div key={index} style={{ position: 'relative' }}>
-                      <div style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '50%',
-                        background: color,
-                        border: '2px solid #fff',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                        cursor: 'pointer',
-                        transition: 'transform 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const nuevosColores = formData.coloresDisponibles.filter((_, i) => i !== index);
-                          setFormData({...formData, coloresDisponibles: nuevosColores});
-                        }}
-                        style={{
-                          position: 'absolute',
-                          top: '-8px',
-                          right: '-8px',
-                          background: '#ff3b30',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '50%',
-                          width: '20px',
-                          height: '20px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '12px',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        ×
-                      </button>
-                      <div style={{ 
-                        fontSize: '11px', 
-                        textAlign: 'center', 
-                        marginTop: '4px',
-                        color: '#666'
-                      }}>
-                        {color}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Agregar nuevo color */}
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
                   <input
                     type="color"
-                    id="colorPicker"
-                    value="#0066cc"
-                    onChange={(e) => {
-                      const input = document.getElementById('colorInput');
-                      input.value = e.target.value;
-                    }}
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      border: 'none',
-                      borderRadius: '50%',
-                      cursor: 'pointer',
-                      padding: 0
-                    }}
+                    value={nuevoColor}
+                    onChange={(e) => setNuevoColor(e.target.value)}
+                    style={{ width: '48px', height: '48px', borderRadius: '8px', cursor: 'pointer' }}
                   />
                   <input
                     type="text"
-                    id="colorInput"
-                    placeholder="#0066cc"
+                    value={nuevoColor}
+                    onChange={(e) => setNuevoColor(e.target.value)}
                     className="form-input"
                     style={{ width: '150px' }}
+                    placeholder="#0066cc"
                   />
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={() => {
-                      const input = document.getElementById('colorInput');
-                      const colorValue = input.value.trim();
-                      
-                      // Validar formato HEX
-                      if (colorValue && /^#[0-9A-Fa-f]{6}$/i.test(colorValue)) {
-                        setFormData({
-                          ...formData, 
-                          coloresDisponibles: [...(formData.coloresDisponibles || []), colorValue]
-                        });
-                        input.value = '';
-                        document.getElementById('colorPicker').value = '#0066cc';
-                      } else if (colorValue) {
-                        alert('Por favor ingresa un color válido en formato HEX (ej: #FF0000)');
-                      }
-                    }}
-                  >
+                  <button type="button" className="btn btn-primary" onClick={agregarColor}>
                     Agregar color
                   </button>
                 </div>
-                
-                {/* Colores predefinidos estilo Apple */}
-                <div style={{ marginTop: '16px' }}>
-                  <p style={{ fontSize: '12px', color: '#86868b', marginBottom: '8px' }}>
-                    Colores Apple sugeridos:
-                  </p>
-                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    {appleColors.map(color => (
-                      <div
-                        key={color.code}
-                        onClick={() => {
-                          setFormData({
-                            ...formData, 
-                            coloresDisponibles: [...(formData.coloresDisponibles || []), color.code]
-                          });
-                        }}
-                        style={{
-                          width: '32px',
-                          height: '32px',
+
+                {/* Lista de colores */}
+                {formData.coloresDisponibles.length > 0 && (
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                    {formData.coloresDisponibles.map((color, index) => (
+                      <div key={`${color}-${index}`} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: 'white',
+                        padding: '4px 12px 4px 8px',
+                        borderRadius: '30px',
+                        border: '1px solid #e5e5e7'
+                      }}>
+                        <div style={{
+                          width: '24px',
+                          height: '24px',
                           borderRadius: '50%',
-                          background: color.code,
-                          border: color.code === '#ffffff' ? '1px solid #ddd' : 'none',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                          cursor: 'pointer',
-                          transition: 'transform 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                        title={color.name}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Upload de imágenes */}
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label className="form-label">Imagen principal</label>
-                <ImageUpload
-                  onImageUploaded={(url) => setFormData({...formData, imagenUrl: url})}
-                  currentImage={formData.imagenUrl}
-                />
-              </div>
-
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label className="form-label">Imágenes adicionales</label>
-                <ImageUpload
-                  onImageUploaded={(url) => {
-                    setFormData({
-                      ...formData,
-                      imagenesAdicionales: [...(formData.imagenesAdicionales || []), url]
-                    });
-                  }}
-                  multiple
-                />
-                {formData.imagenesAdicionales?.length > 0 && (
-                  <div style={{ display: 'flex', gap: '12px', marginTop: '12px', flexWrap: 'wrap' }}>
-                    {formData.imagenesAdicionales.map((img, index) => (
-                      <div key={index} style={{ position: 'relative' }}>
-                        <img
-                          src={img}
-                          alt={`Adicional ${index + 1}`}
-                          style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }}
-                        />
+                          background: color,
+                          border: color === '#ffffff' ? '1px solid #ddd' : 'none'
+                        }} />
+                        <span style={{ fontSize: '14px' }}>{color}</span>
                         <button
                           type="button"
-                          onClick={() => {
-                            const nuevas = formData.imagenesAdicionales.filter((_, i) => i !== index);
-                            setFormData({...formData, imagenesAdicionales: nuevas});
-                          }}
+                          onClick={() => eliminarColor(color)}
                           style={{
-                            position: 'absolute',
-                            top: '-8px',
-                            right: '-8px',
-                            background: '#ff3b30',
-                            color: 'white',
+                            background: 'none',
                             border: 'none',
-                            borderRadius: '50%',
-                            width: '20px',
-                            height: '20px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            color: '#ff3b30',
+                            fontSize: '18px'
                           }}
                         >
                           ×
@@ -521,113 +402,237 @@ const AdminProductos = () => {
                 )}
               </div>
 
-              {/* Destacado */}
-              <div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <input
-                    type="checkbox"
-                    checked={formData.destacado}
-                    onChange={e => setFormData({...formData, destacado: e.target.checked})}
-                  />
-                  Producto destacado
-                </label>
+              {/* 🖼️ IMAGEN PRINCIPAL - CORREGIDO */}
+              <div style={{ marginTop: '24px' }}>
+                <label className="form-label">Imagen principal del producto</label>
+                <ImageUpload
+                  uploadId="imagen-principal"
+                  currentImage={formData.imagenUrl}
+                  onImageUploaded={(url) => setFormData(prev => ({ ...prev, imagenUrl: url }))}
+                  buttonText="Subir imagen principal"
+                />
+                {formData.imagenUrl && (
+                  <div style={{ marginTop: '8px', fontSize: '12px', color: '#00a400' }}>
+                    ✅ Imagen principal guardada
+                  </div>
+                )}
               </div>
 
-              {/* Botones */}
-              <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
+              {/* 🎨 IMÁGENES POR COLOR - CORREGIDO */}
+              {formData.coloresDisponibles.length > 0 && (
+                <div style={{ marginTop: '24px' }}>
+                  <label className="form-label">Imágenes por color</label>
+                  <p style={{ fontSize: '12px', color: '#86868b', marginBottom: '12px' }}>
+                    Sube una imagen específica para cada color
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                    {formData.coloresDisponibles.map((color) => (
+                      <div key={color} style={{
+                        border: '1px solid #e5e5e7',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        background: '#fafafc'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            background: color,
+                            border: color === '#ffffff' ? '1px solid #ddd' : 'none'
+                          }} />
+                          <span style={{ fontWeight: '500' }}>{color}</span>
+                        </div>
+                        
+                        {formData.imagenesPorColor[color] && (
+                          <img 
+                            src={formData.imagenesPorColor[color]} 
+                            alt={color}
+                            style={{ 
+                              width: '100%', 
+                              height: '120px', 
+                              objectFit: 'contain',
+                              borderRadius: '8px',
+                              marginBottom: '12px',
+                              background: '#f5f5f7'
+                            }}
+                          />
+                        )}
+                        
+                        <ImageUpload
+                          key={color}
+                          uploadId={`color-${color.replace('#', '')}`}
+                          currentImage={formData.imagenesPorColor[color]}
+                          onImageUploaded={(url) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              imagenesPorColor: {
+                                ...prev.imagenesPorColor,
+                                [color]: url
+                              }
+                            }));
+                          }}
+                          buttonText={`Subir imagen para ${color}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 📸 GALERÍA DE IMÁGENES ADICIONALES - CORREGIDO */}
+              <div style={{ marginTop: '24px' }}>
+                <label className="form-label">Galería adicional</label>
+                <p style={{ fontSize: '12px', color: '#86868b', marginBottom: '12px' }}>
+                  Imágenes adicionales que se mostrarán en la galería del producto
+                </p>
+                
+                {/* Mostrar imágenes adicionales existentes */}
+                {formData.imagenesAdicionales.length > 0 && (
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                    {formData.imagenesAdicionales.map((img, imgIndex) => (
+                      <div key={imgIndex} style={{ position: 'relative' }}>
+                        <img 
+                          src={img} 
+                          alt={`Adicional ${imgIndex + 1}`} 
+                          style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nuevas = formData.imagenesAdicionales.filter((_, i) => i !== imgIndex);
+                            setFormData({...formData, imagenesAdicionales: nuevas});
+                          }}
+                          style={{
+                            position: 'absolute',
+                            top: '-8px',
+                            right: '-8px',
+                            background: '#ff3b30',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '50%',
+                            width: '24px',
+                            height: '24px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <ImageGalleryUpload
+                  existingImages={formData.imagenesAdicionales}
+                  onImageUploaded={(url) =>
+                    setFormData(prev => ({
+                      ...prev,
+                      imagenesAdicionales: [...prev.imagenesAdicionales, url]
+                    }))
+                  }
+                />
+              </div>
+
+              {/* Botones de acción */}
+              <div style={{ marginTop: '32px', display: 'flex', gap: '12px' }}>
                 <button type="submit" className="btn btn-primary">
-                  {editingProduct ? 'Actualizar' : 'Crear'} Producto
+                  {editingProduct ? 'Actualizar Producto' : 'Crear Producto'}
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-outline"
-                  onClick={() => {
-                    resetForm();
-                    setShowForm(false);
-                  }}
-                >
+                <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline">
                   Cancelar
                 </button>
               </div>
+            </form>
+          </div>
+        )}
+
+        {/* Lista de productos */}
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          {productos.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#86868b' }}>
+              No hay productos creados. ¡Crea tu primer producto!
             </div>
-          </form>
-        </div>
-      )}
-
-      {/* Lista de productos */}
-      <div style={{ background: '#f5f5f7', borderRadius: '24px', padding: '32px' }}>
-        <h2 style={{ fontSize: '24px', marginBottom: '24px' }}>Productos existentes</h2>
-        
-        <div style={{ display: 'grid', gap: '16px' }}>
-          {productos.map(producto => (
-            <div
-              key={producto.id}
-              style={{
-                background: 'white',
-                borderRadius: '16px',
-                padding: '20px',
-                display: 'grid',
-                gridTemplateColumns: '80px 1fr auto auto',
-                gap: '20px',
-                alignItems: 'center'
-              }}
-            >
-              <img
-                src={producto.imagenUrl || '/placeholder.jpg'}
-                alt={producto.nombre}
-                style={{ width: '80px', height: '80px', objectFit: 'contain' }}
-              />
-              
-              <div>
-                <h3 style={{ fontSize: '18px', marginBottom: '4px' }}>{producto.nombre}</h3>
-                <p style={{ color: '#666', fontSize: '14px' }}>SKU: {producto.sku || 'N/A'}</p>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  {producto.coloresDisponibles?.slice(0, 3).map((color, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        background: color,
-                        border: '1px solid #ddd'
-                      }}
-                      title={color}
-                    />
-                  ))}
-                  {producto.coloresDisponibles?.length > 3 && (
-                    <span style={{ fontSize: '12px', color: '#666' }}>
-                      +{producto.coloresDisponibles.length - 3}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '20px', fontWeight: '600' }}>${producto.precio}</div>
-                <div style={{ fontSize: '14px', color: producto.stock > 0 ? '#34c759' : '#ff3b30' }}>
-                  Stock: {producto.stock}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  className="btn btn-outline"
-                  onClick={() => handleEdit(producto)}
-                  style={{ padding: '8px 16px' }}
-                >
-                  Editar
-                </button>
-                <button
-                  className="btn btn-outline"
-                  onClick={() => handleDelete(producto.id)}
-                  style={{ padding: '8px 16px', color: '#ff3b30' }}
-                >
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          ))}
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ background: '#f5f5f7', borderBottom: '1px solid #d2d2d7' }}>
+                <tr>
+                  <th style={{ padding: '16px', textAlign: 'left' }}>Imagen</th>
+                  <th style={{ padding: '16px', textAlign: 'left' }}>Nombre</th>
+                  <th style={{ padding: '16px', textAlign: 'left' }}>Categoría</th>
+                  <th style={{ padding: '16px', textAlign: 'left' }}>Precio</th>
+                  <th style={{ padding: '16px', textAlign: 'left' }}>Stock</th>
+                  <th style={{ padding: '16px', textAlign: 'left' }}>Colores</th>
+                  <th style={{ padding: '16px', textAlign: 'right' }}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productos.map(prod => (
+                  <tr key={prod.id} style={{ borderBottom: '1px solid #e5e5e7' }}>
+                    <td style={{ padding: '16px' }}>
+                      {prod.imagenUrl ? (
+                        <img src={prod.imagenUrl} alt={prod.nombre} style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px' }} />
+                      ) : (
+                        <div style={{ width: '60px', height: '60px', background: '#f5f5f7', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ fontSize: '24px' }}>📷</span>
+                        </div>
+                      )}
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ fontWeight: '500' }}>{prod.nombre}</div>
+                      <div style={{ fontSize: '12px', color: '#86868b' }}>{prod.sku}</div>
+                    </td>
+                    <td style={{ padding: '16px' }}>{prod.categoria?.nombre || 'Sin categoría'}</td>
+                    <td style={{ padding: '16px', fontWeight: '600' }}>${prod.precio}</td>
+                    <td style={{ padding: '16px' }}>
+                      <span className={`badge ${prod.stock > 0 ? 'badge-active' : 'badge-inactive'}`}>
+                        {prod.stock > 0 ? prod.stock : 'Agotado'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        {prod.coloresDisponibles?.slice(0, 3).map(color => (
+                          <div
+                            key={color}
+                            style={{
+                              width: '24px',
+                              height: '24px',
+                              borderRadius: '50%',
+                              background: color,
+                              border: color === '#ffffff' ? '1px solid #ddd' : 'none'
+                            }}
+                            title={color}
+                          />
+                        ))}
+                        {prod.coloresDisponibles?.length > 3 && (
+                          <span style={{ fontSize: '12px', color: '#86868b' }}>
+                            +{prod.coloresDisponibles.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px', textAlign: 'right' }}>
+                      <button
+                        onClick={() => handleEdit(prod)}
+                        style={{ background: 'none', border: 'none', color: '#0066cc', cursor: 'pointer', marginRight: '12px' }}
+                      >
+                        ✏️ Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(prod.id)}
+                        style={{ background: 'none', border: 'none', color: '#ff3b30', cursor: 'pointer' }}
+                      >
+                        🗑️ Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import api from '../services/api';
 
-const ImageUpload = ({ onImageUploaded, currentImage }) => {
+const ImageUpload = ({ onImageUploaded, currentImage, buttonText = "Seleccionar imagen", uploadId }) => {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(currentImage || '');
 
@@ -9,7 +9,20 @@ const ImageUpload = ({ onImageUploaded, currentImage }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Mostrar preview
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor selecciona un archivo de imagen válido');
+      return;
+    }
+
+    // Validar tamaño (ejemplo: máximo 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      alert('El archivo es demasiado grande. Máximo 5MB');
+      return;
+    }
+
+    // Mostrar preview SOLO para esta instancia
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreview(reader.result);
@@ -31,11 +44,14 @@ const ImageUpload = ({ onImageUploaded, currentImage }) => {
       onImageUploaded(response.data.url);
     } catch (error) {
       console.error('Error subiendo imagen:', error);
-      alert('Error al subir la imagen');
+      alert(error.response?.data?.message || 'Error al subir la imagen');
     } finally {
       setUploading(false);
     }
   };
+
+  // ID único para el input
+  const inputId = `image-upload-${uploadId || Math.random().toString(36).substr(2, 9)}`;
 
   return (
     <div>
@@ -75,10 +91,10 @@ const ImageUpload = ({ onImageUploaded, currentImage }) => {
         onChange={handleFileChange}
         disabled={uploading}
         style={{ display: 'none' }}
-        id="image-upload-input"
+        id={inputId}
       />
       <label
-        htmlFor="image-upload-input"
+        htmlFor={inputId}
         className="btn btn-outline"
         style={{ 
           display: 'inline-block',
@@ -86,7 +102,7 @@ const ImageUpload = ({ onImageUploaded, currentImage }) => {
           opacity: uploading ? 0.5 : 1
         }}
       >
-        {uploading ? 'Subiendo...' : 'Seleccionar imagen'}
+        {uploading ? 'Subiendo...' : buttonText}
       </label>
       
       {uploading && (
