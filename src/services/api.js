@@ -1,13 +1,19 @@
 import axios from 'axios';
 
-// ✅ Usar variable de entorno o localhost por defecto
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// ✅ Configuración dinámica: desarrollo local vs producción
+const isProduction = import.meta.env.PROD;
+const API_URL = isProduction 
+  ? 'https://tecnova-backend-production.up.railway.app/api'  // Producción
+  : 'http://localhost:8080/api';  // Desarrollo local
+
+console.log(`🌐 API URL: ${API_URL} (${isProduction ? 'producción' : 'desarrollo'})`);
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: false,
 });
 
 // ✅ Interceptor para añadir token automáticamente
@@ -18,30 +24,45 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
+    
+    // Log para depuración (opcional, puedes comentarlo después)
+    console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`, {
+      hasToken: !!token,
+      tokenPreview: token ? `${token.substring(0, 30)}...` : null
+    });
+    
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// ✅ Interceptor para manejar errores (opcional pero recomendado)
+// ✅ Interceptor para manejar errores
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url} → ${response.status}`);
+    return response;
+  },
   (error) => {
-    console.error('❌ Error en API:', {
+    const errorInfo = {
       url: error.config?.url,
       method: error.config?.method,
       status: error.response?.status,
       data: error.response?.data,
-    });
-
-    // Puedes manejar errores globales aquí (ej: logout si 401)
+    };
+    
+    console.error('❌ Error en API:', errorInfo);
+    
+    // Manejar sesión expirada
     if (error.response?.status === 401) {
-      console.warn('⚠️ Sesión expirada');
+      console.warn('⚠️ Sesión expirada o no autorizada');
       localStorage.removeItem('token');
-      // opcional: window.location.href = '/login';
+      localStorage.removeItem('user');
+      // Redirigir a login si es necesario
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
-
+    
     return Promise.reject(error);
   }
 );
