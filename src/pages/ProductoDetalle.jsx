@@ -123,13 +123,16 @@ const ProductoDetalle = () => {
 
       {/* Contenido producto */}
       <div className="container">
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '60px',
-          marginBottom: '60px'
-        }}>
-          {/* Imagen del producto - RESPONSIVE */}
+        <div 
+          style={{ 
+            display: 'grid', 
+            gridTemplateColumns: '1fr 1fr', 
+            gap: '60px',
+            marginBottom: '60px'
+          }} 
+          className="product-detail-container"
+        >
+          {/* Imagen del producto - FULL WIDTH EN MÓVIL */}
           <div>
             <div style={{
               background: '#f5f5f7',
@@ -139,17 +142,16 @@ const ProductoDetalle = () => {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              minHeight: '300px',
+              minHeight: 'auto',
               width: '100%'
             }}>
               <img 
                 src={currentImage || producto.imagenUrl} 
                 alt={producto.nombre}
                 style={{ 
-                  width: '100%', 
-                  maxWidth: '400px',
+                  width: '100%',
+                  maxWidth: '100%',
                   height: 'auto',
-                  maxHeight: '350px',
                   objectFit: 'contain',
                   transition: 'transform 0.3s'
                 }}

@@ -34,17 +34,20 @@ const CategoryCard = ({ category }) => {
       }}
     >
       {/* Imagen */}
-      <div style={{
-        width: '100%',
-        height: '160px',
-        background: '#f5f5f7',
-        borderRadius: '12px',
-        marginBottom: '16px',
-        overflow: 'hidden',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
+      <div 
+        className="category-card-image" 
+        style={{
+          width: '100%',
+          height: '180px',
+          background: '#f5f5f7',
+          borderRadius: '12px',
+          marginBottom: '16px',
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
         {category.imagenUrl ? (
           <img 
             src={category.imagenUrl} 

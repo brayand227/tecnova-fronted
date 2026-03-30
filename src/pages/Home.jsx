@@ -164,11 +164,14 @@ const Home = () => {
               No hay productos para mostrar
             </div>
           ) : (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '24px'
-            }}>
+            <div 
+              className="products-grid" 
+              style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '24px'
+              }}
+            >
               {filteredProducts().map(product => (
                 <div 
                   key={product.id} 
@@ -193,17 +196,20 @@ const Home = () => {
                   }}
                 >
                   {/* Contenedor de imagen */}
-                  <div style={{
-                    width: '100%',
-                    height: '180px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: '#f5f5f7',
-                    borderRadius: '12px',
-                    marginBottom: '12px',
-                    overflow: 'hidden'
-                  }}>
+                  <div 
+                    className="product-card-image" 
+                    style={{
+                      width: '100%',
+                      height: '200px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: '#f5f5f7',
+                      borderRadius: '12px',
+                      marginBottom: '12px',
+                      overflow: 'hidden'
+                    }}
+                  >
                     <img 
                       src={product.imagenUrl || 'https://via.placeholder.com/300'} 
                       alt={product.nombre}

@@ -17,6 +17,7 @@
   padding: 0;
   box-sizing: border-box;
 }
+
 /* Modo oscuro */
 .dark-mode {
   --apple-bg: #1a1a1a;
@@ -252,4 +253,82 @@ h2 {
 .badge-inactive {
   background: #f5e5e5;
   color: #ff3b30;
+}
+
+/* Estilos para móvil */
+@media (max-width: 768px) {
+  /* Para la página de detalle de producto */
+  .product-detail-container {
+    flex-direction: column !important;
+    gap: 24px !important;
+  }
+  
+  /* Para las imágenes en la página principal */
+  .product-card-image {
+    height: 200px !important;
+  }
+  
+  /* Para las imágenes de categorías */
+  .category-card-image {
+    height: 180px !important;
+  }
+  
+  /* Para el grid de productos */
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  
+  /* Ajustes adicionales para mejor responsividad */
+  .container {
+    padding: 0 16px !important;
+  }
+  
+  h1 {
+    font-size: 32px !important;
+  }
+  
+  h2 {
+    font-size: 24px !important;
+  }
+  
+  .card {
+    padding: 16px !important;
+  }
+  
+  .navbar-links {
+    gap: 16px !important;
+  }
+  
+  .navbar-links a {
+    font-size: 12px !important;
+  }
+}
+
+/* Estilos para pantallas muy pequeñas (móviles pequeños) */
+@media (max-width: 480px) {
+  /* Para el grid de productos en móviles muy pequeños */
+  .products-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Ajustes de padding */
+  .container {
+    padding: 0 12px !important;
+  }
+  
+  /* Ajustes de botones */
+  .btn {
+    padding: 8px 16px !important;
+    font-size: 12px !important;
+  }
+  
+  /* Ajustes de imágenes */
+  .product-card-image {
+    height: 180px !important;
+  }
+  
+  .category-card-image {
+    height: 160px !important;
+  }
 }
