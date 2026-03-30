@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import CategoryCard from '../components/CategoryCard';
+import { formatPrice } from '../utils/formatters';
 
 const Home = () => {
   const [categories, setCategories] = useState([]);
@@ -37,7 +38,7 @@ const Home = () => {
     }
   };
 
-  // Filtrar y ordenar productos (solo búsqueda y orden)
+  // Filtrar y ordenar productos
   const filteredProducts = () => {
     let filtered = [...products];
 
@@ -149,7 +150,7 @@ const Home = () => {
       }}>
         <div className="container">
           <h2 style={{ marginBottom: '32px' }}>
-            Productos
+            Productos {filteredProducts().length > 0 && `(${filteredProducts().length})`}
           </h2>
 
           {filteredProducts().length === 0 ? (
@@ -165,37 +166,71 @@ const Home = () => {
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
               gap: '24px'
             }}>
               {filteredProducts().map(product => (
-                <div
-                  key={product.id}
-                  className="card"
-                  style={{
-                    padding: '20px',
+                <div 
+                  key={product.id} 
+                  className="card" 
+                  style={{ 
+                    padding: '16px', 
                     cursor: 'pointer',
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    background: 'white',
+                    borderRadius: '16px'
                   }}
                   onClick={() => navigate(`/producto/${product.id}`)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                  }}
                 >
-                  <img
-                    src={product.imagenUrl || 'https://via.placeholder.com/300'}
-                    alt={product.nombre}
-                    style={{
-                      width: '100%',
-                      height: '180px',
-                      objectFit: 'contain',
-                      borderRadius: '12px',
-                      marginBottom: '16px',
-                      background: '#f5f5f7'
-                    }}
-                  />
+                  {/* Contenedor de imagen */}
+                  <div style={{
+                    width: '100%',
+                    height: '180px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: '#f5f5f7',
+                    borderRadius: '12px',
+                    marginBottom: '12px',
+                    overflow: 'hidden'
+                  }}>
+                    <img 
+                      src={product.imagenUrl || 'https://via.placeholder.com/300'} 
+                      alt={product.nombre}
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'contain',
+                        padding: '8px',
+                        transition: 'transform 0.3s'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (e.currentTarget.style.transform !== 'scale(1.1)') {
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    />
+                  </div>
 
-                  <h3 style={{
-                    fontSize: '18px',
-                    marginBottom: '8px'
+                  {/* Nombre del producto */}
+                  <h3 style={{ 
+                    fontSize: '16px', 
+                    marginBottom: '8px',
+                    fontWeight: '600',
+                    color: '#1d1d1f'
                   }}>
                     {product.nombre}
                   </h3>
@@ -206,24 +241,29 @@ const Home = () => {
                       display: 'flex', 
                       gap: '6px', 
                       marginBottom: '12px',
-                      justifyContent: 'center',
-                      flexWrap: 'wrap'
+                      flexWrap: 'wrap',
+                      alignItems: 'center'
                     }}>
                       {product.coloresDisponibles.slice(0, 5).map((color, idx) => (
                         <div
                           key={idx}
                           style={{
-                            width: '16px',
-                            height: '16px',
+                            width: '20px',
+                            height: '20px',
                             borderRadius: '50%',
                             background: color,
                             border: color === '#ffffff' || color === '#fff' ? '1px solid #ddd' : 'none',
                             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            transition: 'transform 0.2s'
+                            transition: 'transform 0.2s',
+                            cursor: 'pointer'
                           }}
                           title={color}
                           onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
                           onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Puedes agregar lógica para filtrar por color aquí
+                          }}
                         />
                       ))}
                       {product.coloresDisponibles.length > 5 && (
@@ -238,33 +278,44 @@ const Home = () => {
                     </div>
                   )}
 
-                  <p style={{
-                    fontSize: '14px',
-                    color: '#86868b',
+                  {/* Descripción */}
+                  <p style={{ 
+                    fontSize: '14px', 
+                    color: '#86868b', 
                     marginBottom: '12px',
-                    flex: 1
+                    flex: 1,
+                    lineHeight: '1.4'
                   }}>
                     {product.descripcion?.substring(0, 60)}...
                   </p>
 
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
+                  {/* Precio y botón WhatsApp */}
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
                     alignItems: 'center',
-                    marginTop: 'auto'
+                    marginTop: 'auto',
+                    gap: '12px'
                   }}>
-                    <span style={{
-                      fontSize: '20px',
-                      fontWeight: '600'
+                    <span style={{ 
+                      fontSize: '18px', 
+                      fontWeight: '600',
+                      color: '#1d1d1f'
                     }}>
-                      ${product.precio}
+                      ${formatPrice(product.precio)}
                     </span>
 
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         const number = "573207512431";
-                        const text = `Hola, me interesa el producto: ${product.nombre} ($${product.precio})`;
+                        let text = `Hola, me interesa el producto: ${product.nombre}\n`;
+                        text += `💰 Precio: $${formatPrice(product.precio)}\n`;
+                        if (product.sku) {
+                          text += `📦 SKU: ${product.sku}\n`;
+                        }
+                        text += `\n¿Podrían darme más información?`;
+                        
                         window.open(
                           `https://wa.me/${number}?text=${encodeURIComponent(text)}`,
                           '_blank'
@@ -276,12 +327,13 @@ const Home = () => {
                         border: 'none',
                         borderRadius: '30px',
                         padding: '8px 16px',
-                        fontSize: '14px',
+                        fontSize: '13px',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        transition: 'transform 0.2s, opacity 0.2s'
+                        gap: '6px',
+                        transition: 'transform 0.2s, opacity 0.2s',
+                        fontWeight: '500'
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.transform = 'scale(1.05)';
@@ -292,7 +344,7 @@ const Home = () => {
                         e.currentTarget.style.opacity = '1';
                       }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
                         <path d="M19.05 4.91A9.816 9.816 0 0 0 12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01z"/>
                       </svg>
                       WhatsApp

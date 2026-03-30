@@ -8,7 +8,7 @@ const ProductoDetalle = () => {
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState('');
-  const [currentImage, setCurrentImage] = useState(''); // 👈 Estado para la imagen actual
+  const [currentImage, setCurrentImage] = useState('');
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
@@ -81,6 +81,17 @@ const ProductoDetalle = () => {
     return colorMap[color] || color;
   };
 
+  // Función para determinar si un color es claro
+  const isLightColor = (hexColor) => {
+    if (!hexColor) return false;
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 155;
+  };
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -118,26 +129,29 @@ const ProductoDetalle = () => {
           gap: '60px',
           marginBottom: '60px'
         }}>
-          {/* GALERÍA - Imagen que cambia según color seleccionado */}
+          {/* Imagen del producto - RESPONSIVE */}
           <div>
             <div style={{
               background: '#f5f5f7',
               borderRadius: '24px',
-              padding: '40px',
+              padding: '20px',
               marginBottom: '16px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              minHeight: '400px'
+              minHeight: '300px',
+              width: '100%'
             }}>
               <img 
                 src={currentImage || producto.imagenUrl} 
                 alt={producto.nombre}
                 style={{ 
-                  maxWidth: '100%', 
-                  maxHeight: '400px', 
+                  width: '100%', 
+                  maxWidth: '400px',
+                  height: 'auto',
+                  maxHeight: '350px',
                   objectFit: 'contain',
-                  transition: 'transform 0.3s ease'
+                  transition: 'transform 0.3s'
                 }}
               />
             </div>
@@ -156,7 +170,8 @@ const ProductoDetalle = () => {
                     padding: '8px',
                     cursor: 'pointer',
                     border: currentImage === producto.imagenUrl ? '2px solid #0066cc' : '2px solid transparent',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    flexShrink: 0
                   }}
                 >
                   <img
@@ -177,7 +192,8 @@ const ProductoDetalle = () => {
                       borderRadius: '12px',
                       padding: '8px',
                       cursor: 'pointer',
-                      border: currentImage === producto.imagenesPorColor[selectedColor] ? '2px solid #0066cc' : '2px solid transparent'
+                      border: currentImage === producto.imagenesPorColor[selectedColor] ? '2px solid #0066cc' : '2px solid transparent',
+                      flexShrink: 0
                     }}
                   >
                     <img
@@ -191,7 +207,7 @@ const ProductoDetalle = () => {
                 {/* Imágenes adicionales del producto */}
                 {producto.imagenesAdicionales?.map((img, index) => (
                   <div
-                    key={img.id}
+                    key={img.id || index}
                     onClick={() => setCurrentImage(img.url)}
                     style={{
                       width: '80px',
@@ -200,7 +216,8 @@ const ProductoDetalle = () => {
                       borderRadius: '12px',
                       padding: '8px',
                       cursor: 'pointer',
-                      border: currentImage === img ? '2px solid #0066cc' : '2px solid transparent'
+                      border: currentImage === img.url ? '2px solid #0066cc' : '2px solid transparent',
+                      flexShrink: 0
                     }}
                   >
                     <img
@@ -250,82 +267,70 @@ const ProductoDetalle = () => {
                   Color: <span style={{ color: '#0066cc' }}>{getColorName(selectedColor)}</span>
                 </h3>
                 <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                  {producto.coloresDisponibles.map((color, index) => {
-                    // Función para determinar si un color es claro
-                    const isLightColor = (hexColor) => {
-                      const hex = hexColor.replace('#', '');
-                      const r = parseInt(hex.substring(0, 2), 16);
-                      const g = parseInt(hex.substring(2, 4), 16);
-                      const b = parseInt(hex.substring(4, 6), 16);
-                      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-                      return brightness > 155;
-                    };
-
-                    return (
-                      <div
-                        key={index}
-                        onClick={() => handleColorChange(color)}
-                        style={{
-                          position: 'relative',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {/* Círculo de color */}
-                        <div style={{
-                          width: '56px',
-                          height: '56px',
-                          borderRadius: '50%',
-                          background: color,
-                          border: selectedColor === color ? '3px solid #0066cc' : '2px solid #e5e5e7',
-                          boxShadow: selectedColor === color 
-                            ? '0 4px 12px rgba(0,102,204,0.3)' 
-                            : '0 2px 8px rgba(0,0,0,0.1)',
-                          transition: 'all 0.2s ease',
-                          transform: selectedColor === color ? 'scale(1.1)' : 'scale(1)',
-                          marginBottom: '8px'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (selectedColor !== color) {
-                            e.currentTarget.style.transform = 'scale(1.05)';
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (selectedColor !== color) {
-                            e.currentTarget.style.transform = 'scale(1)';
-                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                          }
-                        }}
-                      />
-                      
-                      {/* Indicador de selección (check) */}
-                      {selectedColor === color && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          color: isLightColor(color) ? '#000' : '#fff',
-                          fontSize: '20px',
-                          fontWeight: 'bold',
-                          pointerEvents: 'none'
-                        }}>
-                          ✓
-                        </div>
-                      )}
-                      
-                      {/* Nombre del color */}
+                  {producto.coloresDisponibles.map((color, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleColorChange(color)}
+                      style={{
+                        position: 'relative',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {/* Círculo de color */}
                       <div style={{
-                        fontSize: '12px',
-                        textAlign: 'center',
-                        color: selectedColor === color ? '#0066cc' : '#86868b',
-                        fontWeight: selectedColor === color ? '500' : 'normal'
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '50%',
+                        background: color,
+                        border: selectedColor === color ? '3px solid #0066cc' : '2px solid #e5e5e7',
+                        boxShadow: selectedColor === color 
+                          ? '0 4px 12px rgba(0,102,204,0.3)' 
+                          : '0 2px 8px rgba(0,0,0,0.1)',
+                        transition: 'all 0.2s ease',
+                        transform: selectedColor === color ? 'scale(1.1)' : 'scale(1)',
+                        marginBottom: '8px'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (selectedColor !== color) {
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (selectedColor !== color) {
+                          e.currentTarget.style.transform = 'scale(1)';
+                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                        }
+                      }}
+                    />
+                    
+                    {/* Indicador de selección (check) */}
+                    {selectedColor === color && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        color: isLightColor(color) ? '#000' : '#fff',
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                        pointerEvents: 'none'
                       }}>
-                        {getColorName(color)}
+                        ✓
                       </div>
+                    )}
+                    
+                    {/* Nombre del color */}
+                    <div style={{
+                      fontSize: '12px',
+                      textAlign: 'center',
+                      color: selectedColor === color ? '#0066cc' : '#86868b',
+                      fontWeight: selectedColor === color ? '500' : 'normal'
+                    }}>
+                      {getColorName(color)}
                     </div>
-                  );
-                })}
+                  </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -335,7 +340,7 @@ const ProductoDetalle = () => {
               <h3 style={{ fontSize: '20px', marginBottom: '12px' }}>
                 Descripción
               </h3>
-              <p style={{ lineHeight: '1.6' }}>
+              <p style={{ lineHeight: '1.6', color: '#1d1d1f' }}>
                 {producto.descripcion}
               </p>
             </div>
@@ -350,7 +355,8 @@ const ProductoDetalle = () => {
                   background: '#f5f5f7',
                   borderRadius: '16px',
                   padding: '20px',
-                  whiteSpace: 'pre-line'
+                  whiteSpace: 'pre-line',
+                  color: '#1d1d1f'
                 }}>
                   {producto.especificaciones}
                 </div>
@@ -370,8 +376,11 @@ const ProductoDetalle = () => {
                   cursor: 'pointer',
                   borderRadius: '8px',
                   color: 'white',
-                  fontWeight: '500'
+                  fontWeight: '500',
+                  transition: 'opacity 0.2s'
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                 onClick={() => {
                   const number = "573207512431";
                   

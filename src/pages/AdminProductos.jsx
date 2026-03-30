@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ImageUpload from '../components/ImageUpload';
 import ImageGalleryUpload from '../components/ImageGalleryUpload';
+import { formatPrice, parsePrice } from '../utils/formatters';
 
 const AdminProductos = () => {
   const [nuevoColor, setNuevoColor] = useState('#0066cc');
@@ -260,16 +261,21 @@ const AdminProductos = () => {
                   />
                 </div>
                 
-                {/* Precio */}
+                {/* Precio con formato colombiano */}
                 <div>
                   <label className="form-label">Precio *</label>
                   <input
-                    type="number"
-                    step="0.01"
+                    type="text"
                     className="form-input"
-                    value={formData.precio}
-                    onChange={(e) => setFormData({...formData, precio: e.target.value})}
-                    required
+                    value={formData.precio ? formatPrice(formData.precio) : ''}
+                    onChange={(e) => {
+                      // Permitir solo números y puntos
+                      let value = e.target.value.replace(/[^\d.]/g, '');
+                      // Convertir a número limpio
+                      const numericValue = parsePrice(value);
+                      setFormData({...formData, precio: numericValue});
+                    }}
+                    placeholder="2.000.000"
                   />
                 </div>
                 
@@ -402,7 +408,7 @@ const AdminProductos = () => {
                 )}
               </div>
 
-              {/* 🖼️ IMAGEN PRINCIPAL - CORREGIDO */}
+              {/* 🖼️ IMAGEN PRINCIPAL */}
               <div style={{ marginTop: '24px' }}>
                 <label className="form-label">Imagen principal del producto</label>
                 <ImageUpload
@@ -418,7 +424,7 @@ const AdminProductos = () => {
                 )}
               </div>
 
-              {/* 🎨 IMÁGENES POR COLOR - CORREGIDO */}
+              {/* 🎨 IMÁGENES POR COLOR */}
               {formData.coloresDisponibles.length > 0 && (
                 <div style={{ marginTop: '24px' }}>
                   <label className="form-label">Imágenes por color</label>
@@ -480,7 +486,7 @@ const AdminProductos = () => {
                 </div>
               )}
 
-              {/* 📸 GALERÍA DE IMÁGENES ADICIONALES - CORREGIDO */}
+              {/* 📸 GALERÍA DE IMÁGENES ADICIONALES */}
               <div style={{ marginTop: '24px' }}>
                 <label className="form-label">Galería adicional</label>
                 <p style={{ fontSize: '12px', color: '#86868b', marginBottom: '12px' }}>
@@ -586,7 +592,7 @@ const AdminProductos = () => {
                       <div style={{ fontSize: '12px', color: '#86868b' }}>{prod.sku}</div>
                     </td>
                     <td style={{ padding: '16px' }}>{prod.categoria?.nombre || 'Sin categoría'}</td>
-                    <td style={{ padding: '16px', fontWeight: '600' }}>${prod.precio}</td>
+                    <td style={{ padding: '16px', fontWeight: '600' }}>${formatPrice(prod.precio)}</td>
                     <td style={{ padding: '16px' }}>
                       <span className={`badge ${prod.stock > 0 ? 'badge-active' : 'badge-inactive'}`}>
                         {prod.stock > 0 ? prod.stock : 'Agotado'}
