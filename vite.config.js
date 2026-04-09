@@ -1,11 +1,19 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  base: '/',  // ← Importante para rutas relativas
+  plugins: [react()],
   build: {
-    outDir: 'dist',  // ← Explícito (por defecto ya es 'dist')
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
+  },
+  server: {
+    port: 5173,
+    open: true
   }
 })
