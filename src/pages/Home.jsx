@@ -69,6 +69,9 @@ const Home = () => {
   };
 
   const filteredProductsList = getFilteredAndSortedProducts();
+  
+  // Determinar si hay una búsqueda activa
+  const isSearching = searchTerm.trim().length > 0;
 
   if (loading) {
     return (
@@ -100,7 +103,6 @@ const Home = () => {
         zIndex: 0,
         overflow: 'hidden'
       }}>
-        {/* Capa oscura sobre la imagen */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -111,7 +113,6 @@ const Home = () => {
           zIndex: 1
         }} />
         
-        {/* Imagen de fondo */}
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -137,7 +138,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Contenido (se mantiene encima del fondo) */}
+      {/* Contenido */}
       <div style={{ position: 'relative', zIndex: 2 }}>
         {/* HERO SECTION */}
         <section style={{
@@ -162,7 +163,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* BUSCADOR - ARRIBA (justo después del hero) */}
+        {/* BUSCADOR Y ORDENADOR */}
         <section style={{ padding: '0 24px 40px' }}>
           <div className="container">
             <div style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -185,7 +186,6 @@ const Home = () => {
                 }}
               />
 
-              {/* SELECTOR DE ORDEN */}
               <select
                 className="form-input"
                 style={{ 
@@ -208,8 +208,8 @@ const Home = () => {
           </div>
         </section>
 
-        {/* CATEGORIAS - CON ESTILO GLASSMORPHISM */}
-        {categories.length > 0 && (
+        {/* CATEGORIAS - SOLO SE MUESTRAN SI NO HAY BÚSQUEDA */}
+        {!isSearching && categories.length > 0 && (
           <section style={{ padding: '40px 24px' }}>
             <div className="container">
               <h2 style={{ 
@@ -232,7 +232,7 @@ const Home = () => {
           </section>
         )}
 
-        {/* PRODUCTOS */}
+        {/* PRODUCTOS - SIEMPRE SE MUESTRAN */}
         <section style={{
           padding: '40px 24px 60px',
           background: 'transparent'
@@ -250,19 +250,28 @@ const Home = () => {
                 color: 'white',
                 margin: 0
               }}>
-                Productos {filteredProductsList.length > 0 && `(${filteredProductsList.length})`}
+                {isSearching ? 'Resultados de búsqueda' : 'Productos'} 
+                {filteredProductsList.length > 0 && ` (${filteredProductsList.length})`}
               </h2>
               
-              {searchTerm && (
-                <span style={{
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: '14px',
-                  background: 'rgba(255,255,255,0.15)',
-                  padding: '6px 12px',
-                  borderRadius: '20px'
-                }}>
-                  Resultados para: "{searchTerm}"
-                </span>
+              {isSearching && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    border: 'none',
+                    borderRadius: '30px',
+                    padding: '6px 16px',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                >
+                  ✕ Limpiar búsqueda
+                </button>
               )}
             </div>
 
@@ -275,7 +284,7 @@ const Home = () => {
                 backdropFilter: 'blur(10px)',
                 borderRadius: '24px'
               }}>
-                {searchTerm ? 'No se encontraron productos con esa búsqueda' : 'No hay productos para mostrar'}
+                {isSearching ? 'No se encontraron productos con esa búsqueda' : 'No hay productos para mostrar'}
               </div>
             ) : (
               <div 
@@ -348,7 +357,6 @@ const Home = () => {
                       />
                     </div>
 
-                    {/* Nombre del producto */}
                     <h3 style={{ 
                       fontSize: '16px', 
                       marginBottom: '8px',
@@ -358,7 +366,6 @@ const Home = () => {
                       {product.nombre}
                     </h3>
 
-                    {/* Mini círculos de colores */}
                     {product.coloresDisponibles && product.coloresDisponibles.length > 0 && (
                       <div style={{ 
                         display: 'flex', 
@@ -400,7 +407,6 @@ const Home = () => {
                       </div>
                     )}
 
-                    {/* Descripción */}
                     <p style={{ 
                       fontSize: '14px', 
                       color: 'rgba(255, 255, 255, 0.7)', 
@@ -411,7 +417,6 @@ const Home = () => {
                       {product.descripcion?.substring(0, 60)}...
                     </p>
 
-                    {/* Precio y botón WhatsApp */}
                     <div style={{ 
                       display: 'flex', 
                       justifyContent: 'space-between', 
