@@ -96,7 +96,7 @@ const Home = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(0, 0, 0, 0.15)', // Ajusta la opacidad para más oscuridad
+          background: 'rgba(0, 0, 0, 0.5)', // Ajusta la opacidad para más oscuridad
           zIndex: 1
         }} />
         
@@ -111,7 +111,7 @@ const Home = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          opacity: 0.4  // Ajusta la opacidad de la imagen (0.2 - 0.6)
+          opacity: 0.6  // Ajusta la opacidad de la imagen (0.2 - 0.6)
         }}>
           <img 
             src="/logo.jpeg"
