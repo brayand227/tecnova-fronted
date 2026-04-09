@@ -69,8 +69,6 @@ const Home = () => {
   };
 
   const filteredProductsList = getFilteredAndSortedProducts();
-  
-  // Determinar si hay una búsqueda activa
   const isSearching = searchTerm.trim().length > 0;
 
   if (loading) {
@@ -93,7 +91,7 @@ const Home = () => {
       minHeight: '100vh',
       background: '#f5f5f7'
     }}>
-      {/* Fondo con logo en toda la página */}
+      {/* Fondo con logo */}
       <div style={{
         position: 'fixed',
         top: 0,
@@ -208,33 +206,11 @@ const Home = () => {
           </div>
         </section>
 
-        {/* CATEGORIAS - SOLO SE MUESTRAN SI NO HAY BÚSQUEDA */}
-        {!isSearching && categories.length > 0 && (
-          <section style={{ padding: '40px 24px' }}>
-            <div className="container">
-              <h2 style={{ 
-                marginBottom: '32px',
-                color: 'white'
-              }}>Categorías</h2>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: '24px'
-              }}>
-                {categories.map(category => (
-                  <CategoryCard
-                    key={category.id}
-                    category={category}
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* PRODUCTOS - SIEMPRE SE MUESTRAN */}
+        {/* ========================================== */}
+        {/* PRIMERO: RESULTADOS DE BÚSQUEDA O PRODUCTOS */}
+        {/* ========================================== */}
         <section style={{
-          padding: '40px 24px 60px',
+          padding: '0 24px 40px',
           background: 'transparent'
         }}>
           <div className="container">
@@ -242,7 +218,7 @@ const Home = () => {
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center',
-              marginBottom: '32px',
+              marginBottom: '24px',
               flexWrap: 'wrap',
               gap: '16px'
             }}>
@@ -250,7 +226,7 @@ const Home = () => {
                 color: 'white',
                 margin: 0
               }}>
-                {isSearching ? 'Resultados de búsqueda' : 'Productos'} 
+                {isSearching ? `🔍 Resultados para "${searchTerm}"` : 'Productos'}
                 {filteredProductsList.length > 0 && ` (${filteredProductsList.length})`}
               </h2>
               
@@ -261,7 +237,7 @@ const Home = () => {
                     background: 'rgba(255,255,255,0.2)',
                     border: 'none',
                     borderRadius: '30px',
-                    padding: '6px 16px',
+                    padding: '8px 20px',
                     color: 'white',
                     cursor: 'pointer',
                     fontSize: '14px',
@@ -270,23 +246,23 @@ const Home = () => {
                   onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
                 >
-                  ✕ Limpiar búsqueda
+                  ✕ Mostrar todas las categorías
                 </button>
               )}
             </div>
 
-            {filteredProductsList.length === 0 ? (
+            {filteredProductsList.length === 0 && isSearching ? (
               <div style={{
                 textAlign: 'center',
-                padding: '60px',
+                padding: '40px',
                 color: 'white',
                 background: 'rgba(255, 255, 255, 0.15)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '24px'
               }}>
-                {isSearching ? 'No se encontraron productos con esa búsqueda' : 'No hay productos para mostrar'}
+                No se encontraron productos que coincidan con "{searchTerm}"
               </div>
-            ) : (
+            ) : filteredProductsList.length > 0 ? (
               <div 
                 className="products-grid" 
                 style={{ 
@@ -323,7 +299,6 @@ const Home = () => {
                       e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
                     }}
                   >
-                    {/* Contenedor de imagen */}
                     <div 
                       className="product-card-image" 
                       style={{
@@ -390,9 +365,6 @@ const Home = () => {
                             title={color}
                             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
                             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                            }}
                           />
                         ))}
                         {product.coloresDisponibles.length > 5 && (
@@ -480,9 +452,35 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-            )}
+            ) : null}
           </div>
         </section>
+
+        {/* ========================================== */}
+        {/* SEGUNDO: CATEGORÍAS (SOLO SI NO HAY BÚSQUEDA) */}
+        {/* ========================================== */}
+        {!isSearching && categories.length > 0 && (
+          <section style={{ padding: '0 24px 60px' }}>
+            <div className="container">
+              <h2 style={{ 
+                marginBottom: '32px',
+                color: 'white'
+              }}>Categorías</h2>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '24px'
+              }}>
+                {categories.map(category => (
+                  <CategoryCard
+                    key={category.id}
+                    category={category}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );
