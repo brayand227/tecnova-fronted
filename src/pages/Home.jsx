@@ -88,7 +88,7 @@ const Home = () => {
             maxWidth: '600px',
             margin: '0 auto 32px'
           }}>
-            Tecnología innovadora para tu vida diaria
+            Innovacion en tecnología
           </p>
 
           {/* BUSCADOR */}
