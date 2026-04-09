@@ -8,6 +8,7 @@ const Home = () => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('nombre');
 
   const navigate = useNavigate();
@@ -37,19 +38,37 @@ const Home = () => {
     }
   };
 
-  // Filtrar y ordenar productos
-  const filteredProducts = () => {
-    let filtered = [...products];
+  // Filtrar productos por búsqueda
+  const filterBySearch = (productsList) => {
+    if (!searchTerm.trim()) return productsList;
+    
+    return productsList.filter(product =>
+      product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (product.descripcion && product.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  };
 
+  // Ordenar productos
+  const sortProducts = (productsList) => {
+    const sorted = [...productsList];
+    
     switch (sortBy) {
       case 'precio_asc':
-        return filtered.sort((a, b) => a.precio - b.precio);
+        return sorted.sort((a, b) => a.precio - b.precio);
       case 'precio_desc':
-        return filtered.sort((a, b) => b.precio - a.precio);
+        return sorted.sort((a, b) => b.precio - a.precio);
       default:
-        return filtered.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        return sorted.sort((a, b) => a.nombre.localeCompare(b.nombre));
     }
   };
+
+  // Obtener productos finales (filtrados + ordenados)
+  const getFilteredAndSortedProducts = () => {
+    const filtered = filterBySearch(products);
+    return sortProducts(filtered);
+  };
+
+  const filteredProductsList = getFilteredAndSortedProducts();
 
   if (loading) {
     return (
@@ -141,7 +160,28 @@ const Home = () => {
               Innovación en tecnología
             </p>
 
-            {/* SOLO SELECTOR DE ORDEN (sin buscador) */}
+            {/* BUSCADOR */}
+            <div style={{ maxWidth: '500px', margin: '0 auto 20px auto' }}>
+              <input
+                type="text"
+                placeholder="🔍 Buscar productos..."
+                className="form-input"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ 
+                  width: '100%',
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  padding: '14px 20px',
+                  borderRadius: '30px',
+                  border: 'none',
+                  fontSize: '16px',
+                  outline: 'none',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+              />
+            </div>
+
+            {/* SELECTOR DE ORDEN */}
             <div style={{ maxWidth: '300px', margin: '0 auto' }}>
               <select
                 className="form-input"
@@ -151,7 +191,8 @@ const Home = () => {
                   padding: '12px 16px',
                   borderRadius: '30px',
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  fontSize: '14px'
                 }}
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -198,10 +239,10 @@ const Home = () => {
               marginBottom: '32px',
               color: 'white'
             }}>
-              Productos {filteredProducts().length > 0 && `(${filteredProducts().length})`}
+              Productos {filteredProductsList.length > 0 && `(${filteredProductsList.length})`}
             </h2>
 
-            {filteredProducts().length === 0 ? (
+            {filteredProductsList.length === 0 ? (
               <div style={{
                 textAlign: 'center',
                 padding: '60px',
@@ -210,7 +251,7 @@ const Home = () => {
                 backdropFilter: 'blur(10px)',
                 borderRadius: '24px'
               }}>
-                No hay productos para mostrar
+                {searchTerm ? 'No se encontraron productos con esa búsqueda' : 'No hay productos para mostrar'}
               </div>
             ) : (
               <div 
@@ -221,7 +262,7 @@ const Home = () => {
                   gap: '24px'
                 }}
               >
-                {filteredProducts().map(product => (
+                {filteredProductsList.map(product => (
                   <div 
                     key={product.id} 
                     className="card" 
