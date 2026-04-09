@@ -96,7 +96,7 @@ const Home = () => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)', // Ajusta la opacidad para más oscuridad
+          background: 'rgba(0, 0, 0, 0.25)',
           zIndex: 1
         }} />
         
@@ -111,7 +111,7 @@ const Home = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          opacity: 0.6  // Ajusta la opacidad de la imagen (0.2 - 0.6)
+          opacity: 0.4
         }}>
           <img 
             src="/logo.jpeg"
@@ -137,11 +137,11 @@ const Home = () => {
           <div className="container">
             <h1 style={{ 
               marginBottom: '16px',
-              color: '#1d1d1f'
+              color: 'white'
             }}>TECNOVA</h1>
             <p style={{
               fontSize: '20px',
-              color: '#1d1d1f',
+              color: 'rgba(255, 255, 255, 0.8)',
               maxWidth: '600px',
               margin: '0 auto 32px'
             }}>
@@ -156,7 +156,10 @@ const Home = () => {
                 className="form-input"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ marginBottom: '16px' }}
+                style={{ 
+                  marginBottom: '16px',
+                  background: 'rgba(255, 255, 255, 0.9)'
+                }}
               />
 
               <div style={{
@@ -166,7 +169,10 @@ const Home = () => {
               }}>
                 <select
                   className="form-input"
-                  style={{ width: 'auto' }}
+                  style={{ 
+                    width: 'auto',
+                    background: 'rgba(255, 255, 255, 0.9)'
+                  }}
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
@@ -185,7 +191,7 @@ const Home = () => {
             <div className="container">
               <h2 style={{ 
                 marginBottom: '32px',
-                color: '#1d1d1f'
+                color: 'white'
               }}>Categorías</h2>
               <div style={{
                 display: 'grid',
@@ -206,12 +212,12 @@ const Home = () => {
         {/* PRODUCTOS */}
         <section style={{
           padding: '60px 24px',
-          background: 'rgba(245, 245, 247, 0.9)' // Fondo semi-transparente
+          background: 'transparent'
         }}>
           <div className="container">
             <h2 style={{ 
               marginBottom: '32px',
-              color: '#1d1d1f'
+              color: 'white'
             }}>
               Productos {filteredProducts().length > 0 && `(${filteredProducts().length})`}
             </h2>
@@ -220,8 +226,9 @@ const Home = () => {
               <div style={{
                 textAlign: 'center',
                 padding: '60px',
-                color: '#86868b',
-                background: 'white',
+                color: 'white',
+                background: 'rgba(255, 255, 255, 0.15)',
+                backdropFilter: 'blur(10px)',
                 borderRadius: '24px'
               }}>
                 No hay productos para mostrar
@@ -244,19 +251,23 @@ const Home = () => {
                       cursor: 'pointer',
                       display: 'flex',
                       flexDirection: 'column',
-                      transition: 'transform 0.2s, box-shadow 0.2s',
-                      background: 'white',
+                      transition: 'transform 0.2s, box-shadow 0.2s, background 0.3s',
+                      background: 'rgba(255, 255, 255, 0.15)',
+                      backdropFilter: 'blur(10px)',
                       borderRadius: '16px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)'
                     }}
                     onClick={() => navigate(`/producto/${product.id}`)}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)';
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+                      e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
                     }}
                   >
                     {/* Contenedor de imagen */}
@@ -268,7 +279,7 @@ const Home = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: '#f5f5f7',
+                        background: 'rgba(0, 0, 0, 0.3)',
                         borderRadius: '12px',
                         marginBottom: '12px',
                         overflow: 'hidden'
@@ -285,9 +296,7 @@ const Home = () => {
                           transition: 'transform 0.3s'
                         }}
                         onMouseEnter={(e) => {
-                          if (e.currentTarget.style.transform !== 'scale(1.1)') {
-                            e.currentTarget.style.transform = 'scale(1.05)';
-                          }
+                          e.currentTarget.style.transform = 'scale(1.05)';
                         }}
                         onMouseLeave={(e) => {
                           e.currentTarget.style.transform = 'scale(1)';
@@ -300,7 +309,7 @@ const Home = () => {
                       fontSize: '16px', 
                       marginBottom: '8px',
                       fontWeight: '600',
-                      color: '#1d1d1f'
+                      color: 'white'
                     }}>
                       {product.nombre}
                     </h3>
@@ -322,8 +331,8 @@ const Home = () => {
                               height: '20px',
                               borderRadius: '50%',
                               background: color,
-                              border: color === '#ffffff' || color === '#fff' ? '1px solid #ddd' : 'none',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                              border: color === '#ffffff' || color === '#fff' ? '1px solid rgba(255,255,255,0.5)' : 'none',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                               transition: 'transform 0.2s',
                               cursor: 'pointer'
                             }}
@@ -338,7 +347,7 @@ const Home = () => {
                         {product.coloresDisponibles.length > 5 && (
                           <span style={{ 
                             fontSize: '12px', 
-                            color: '#86868b',
+                            color: 'rgba(255,255,255,0.7)',
                             fontWeight: '500'
                           }}>
                             +{product.coloresDisponibles.length - 5}
@@ -350,7 +359,7 @@ const Home = () => {
                     {/* Descripción */}
                     <p style={{ 
                       fontSize: '14px', 
-                      color: '#86868b', 
+                      color: 'rgba(255, 255, 255, 0.7)', 
                       marginBottom: '12px',
                       flex: 1,
                       lineHeight: '1.4'
@@ -369,7 +378,7 @@ const Home = () => {
                       <span style={{ 
                         fontSize: '18px', 
                         fontWeight: '600',
-                        color: '#1d1d1f'
+                        color: 'white'
                       }}>
                         ${formatPrice(product.precio)}
                       </span>
