@@ -65,7 +65,8 @@ const Home = () => {
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        background: '#f5f5f7'
       }}>
         <div className="spinner"></div>
       </div>
@@ -73,319 +74,358 @@ const Home = () => {
   }
 
   return (
-    <div>
-      {/* HERO CON LOGO DE FONDO */}
-      <section style={{
-        background: 'linear-gradient(to bottom, #f5f5f7, #ffffff)',
-        padding: '100px 24px 60px',
-        textAlign: 'center',
-        position: 'relative',
+    <div style={{
+      position: 'relative',
+      minHeight: '100vh',
+      background: '#f5f5f7'
+    }}>
+      {/* Fondo con logo en toda la página */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 0,
         overflow: 'hidden'
       }}>
-        {/* Logo de fondo */}
+        {/* Capa oscura sobre la imagen */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.15)', // Ajusta la opacidad para más oscuridad
+          zIndex: 1
+        }} />
+        
+        {/* Imagen de fondo */}
         <div style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          opacity: 0.05,
-          pointerEvents: 'none',
-          zIndex: 0
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0.4  // Ajusta la opacidad de la imagen (0.2 - 0.6)
         }}>
           <img 
             src="/logo.jpeg"
             alt="TECNOVA"
             style={{
-              width: '400px',
-              maxWidth: '80vw',
-              height: 'auto'
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center'
             }}
           />
         </div>
-        
-        {/* Contenido (se mantiene encima) */}
-        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ marginBottom: '16px' }}>TECNOVA</h1>
-          <p style={{
-            fontSize: '20px',
-            color: '#86868b',
-            maxWidth: '600px',
-            margin: '0 auto 32px'
-          }}>
-            Innovación en tecnología
-          </p>
+      </div>
 
-          {/* BUSCADOR */}
-          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-            <input
-              type="text"
-              placeholder="Buscar productos..."
-              className="form-input"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ marginBottom: '16px' }}
-            />
-
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              justifyContent: 'center'
-            }}>
-              <select
-                className="form-input"
-                style={{ width: 'auto' }}
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <option value="nombre">Ordenar por nombre</option>
-                <option value="precio_asc">Precio: menor a mayor</option>
-                <option value="precio_desc">Precio: mayor a menor</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CATEGORIAS */}
-      {categories.length > 0 && (
-        <section style={{ padding: '60px 24px' }}>
+      {/* Contenido (se mantiene encima del fondo) */}
+      <div style={{ position: 'relative', zIndex: 2 }}>
+        {/* HERO SECTION */}
+        <section style={{
+          background: 'transparent',
+          padding: '100px 24px 60px',
+          textAlign: 'center'
+        }}>
           <div className="container">
-            <h2 style={{ marginBottom: '32px' }}>Categorías</h2>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-              gap: '24px'
+            <h1 style={{ 
+              marginBottom: '16px',
+              color: '#1d1d1f'
+            }}>TECNOVA</h1>
+            <p style={{
+              fontSize: '20px',
+              color: '#1d1d1f',
+              maxWidth: '600px',
+              margin: '0 auto 32px'
             }}>
-              {categories.map(category => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                />
-              ))}
+              Innovación en tecnología
+            </p>
+
+            {/* BUSCADOR */}
+            <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+              <input
+                type="text"
+                placeholder="Buscar productos..."
+                className="form-input"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ marginBottom: '16px' }}
+              />
+
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'center'
+              }}>
+                <select
+                  className="form-input"
+                  style={{ width: 'auto' }}
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="nombre">Ordenar por nombre</option>
+                  <option value="precio_asc">Precio: menor a mayor</option>
+                  <option value="precio_desc">Precio: mayor a menor</option>
+                </select>
+              </div>
             </div>
           </div>
         </section>
-      )}
 
-      {/* PRODUCTOS */}
-      <section style={{
-        padding: '60px 24px',
-        background: '#f5f5f7'
-      }}>
-        <div className="container">
-          <h2 style={{ marginBottom: '32px' }}>
-            Productos {filteredProducts().length > 0 && `(${filteredProducts().length})`}
-          </h2>
-
-          {filteredProducts().length === 0 ? (
-            <div style={{
-              textAlign: 'center',
-              padding: '60px',
-              color: '#86868b',
-              background: 'white',
-              borderRadius: '24px'
-            }}>
-              No hay productos para mostrar
-            </div>
-          ) : (
-            <div 
-              className="products-grid" 
-              style={{ 
-                display: 'grid', 
+        {/* CATEGORIAS */}
+        {categories.length > 0 && (
+          <section style={{ padding: '60px 24px' }}>
+            <div className="container">
+              <h2 style={{ 
+                marginBottom: '32px',
+                color: '#1d1d1f'
+              }}>Categorías</h2>
+              <div style={{
+                display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
                 gap: '24px'
-              }}
-            >
-              {filteredProducts().map(product => (
-                <div 
-                  key={product.id} 
-                  className="card" 
-                  style={{ 
-                    padding: '16px', 
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    background: 'white',
-                    borderRadius: '16px'
-                  }}
-                  onClick={() => navigate(`/producto/${product.id}`)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                  }}
-                >
-                  {/* Contenedor de imagen */}
+              }}>
+                {categories.map(category => (
+                  <CategoryCard
+                    key={category.id}
+                    category={category}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* PRODUCTOS */}
+        <section style={{
+          padding: '60px 24px',
+          background: 'rgba(245, 245, 247, 0.9)' // Fondo semi-transparente
+        }}>
+          <div className="container">
+            <h2 style={{ 
+              marginBottom: '32px',
+              color: '#1d1d1f'
+            }}>
+              Productos {filteredProducts().length > 0 && `(${filteredProducts().length})`}
+            </h2>
+
+            {filteredProducts().length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '60px',
+                color: '#86868b',
+                background: 'white',
+                borderRadius: '24px'
+              }}>
+                No hay productos para mostrar
+              </div>
+            ) : (
+              <div 
+                className="products-grid" 
+                style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                  gap: '24px'
+                }}
+              >
+                {filteredProducts().map(product => (
                   <div 
-                    className="product-card-image" 
-                    style={{
-                      width: '100%',
-                      height: '200px',
+                    key={product.id} 
+                    className="card" 
+                    style={{ 
+                      padding: '16px', 
+                      cursor: 'pointer',
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: '#f5f5f7',
-                      borderRadius: '12px',
-                      marginBottom: '12px',
-                      overflow: 'hidden'
+                      flexDirection: 'column',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                      background: 'white',
+                      borderRadius: '16px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    }}
+                    onClick={() => navigate(`/producto/${product.id}`)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
                     }}
                   >
-                    <img 
-                      src={product.imagenUrl || 'https://via.placeholder.com/300'} 
-                      alt={product.nombre}
-                      style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        objectFit: 'contain',
-                        padding: '8px',
-                        transition: 'transform 0.3s'
+                    {/* Contenedor de imagen */}
+                    <div 
+                      className="product-card-image" 
+                      style={{
+                        width: '100%',
+                        height: '200px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#f5f5f7',
+                        borderRadius: '12px',
+                        marginBottom: '12px',
+                        overflow: 'hidden'
                       }}
-                      onMouseEnter={(e) => {
-                        if (e.currentTarget.style.transform !== 'scale(1.1)') {
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }}
-                    />
-                  </div>
-
-                  {/* Nombre del producto */}
-                  <h3 style={{ 
-                    fontSize: '16px', 
-                    marginBottom: '8px',
-                    fontWeight: '600',
-                    color: '#1d1d1f'
-                  }}>
-                    {product.nombre}
-                  </h3>
-
-                  {/* Mini círculos de colores */}
-                  {product.coloresDisponibles && product.coloresDisponibles.length > 0 && (
-                    <div style={{ 
-                      display: 'flex', 
-                      gap: '6px', 
-                      marginBottom: '12px',
-                      flexWrap: 'wrap',
-                      alignItems: 'center'
-                    }}>
-                      {product.coloresDisponibles.slice(0, 5).map((color, idx) => (
-                        <div
-                          key={idx}
-                          style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '50%',
-                            background: color,
-                            border: color === '#ffffff' || color === '#fff' ? '1px solid #ddd' : 'none',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            transition: 'transform 0.2s',
-                            cursor: 'pointer'
-                          }}
-                          title={color}
-                          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
-                          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Puedes agregar lógica para filtrar por color aquí
-                          }}
-                        />
-                      ))}
-                      {product.coloresDisponibles.length > 5 && (
-                        <span style={{ 
-                          fontSize: '12px', 
-                          color: '#86868b',
-                          fontWeight: '500'
-                        }}>
-                          +{product.coloresDisponibles.length - 5}
-                        </span>
-                      )}
+                    >
+                      <img 
+                        src={product.imagenUrl || 'https://via.placeholder.com/300'} 
+                        alt={product.nombre}
+                        style={{ 
+                          width: '100%', 
+                          height: '100%', 
+                          objectFit: 'contain',
+                          padding: '8px',
+                          transition: 'transform 0.3s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (e.currentTarget.style.transform !== 'scale(1.1)') {
+                            e.currentTarget.style.transform = 'scale(1.05)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                      />
                     </div>
-                  )}
 
-                  {/* Descripción */}
-                  <p style={{ 
-                    fontSize: '14px', 
-                    color: '#86868b', 
-                    marginBottom: '12px',
-                    flex: 1,
-                    lineHeight: '1.4'
-                  }}>
-                    {product.descripcion?.substring(0, 60)}...
-                  </p>
-
-                  {/* Precio y botón WhatsApp */}
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginTop: 'auto',
-                    gap: '12px'
-                  }}>
-                    <span style={{ 
-                      fontSize: '18px', 
+                    {/* Nombre del producto */}
+                    <h3 style={{ 
+                      fontSize: '16px', 
+                      marginBottom: '8px',
                       fontWeight: '600',
                       color: '#1d1d1f'
                     }}>
-                      ${formatPrice(product.precio)}
-                    </span>
+                      {product.nombre}
+                    </h3>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const number = "573207512431";
-                        let text = `Hola, me interesa el producto: ${product.nombre}\n`;
-                        text += `💰 Precio: $${formatPrice(product.precio)}\n`;
-                        if (product.sku) {
-                          text += `📦 SKU: ${product.sku}\n`;
-                        }
-                        text += `\n¿Podrían darme más información?`;
-                        
-                        window.open(
-                          `https://wa.me/${number}?text=${encodeURIComponent(text)}`,
-                          '_blank'
-                        );
-                      }}
-                      style={{
-                        background: '#25D366',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '30px',
-                        padding: '8px 16px',
-                        fontSize: '13px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        transition: 'transform 0.2s, opacity 0.2s',
-                        fontWeight: '500'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.05)';
-                        e.currentTarget.style.opacity = '0.9';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.opacity = '1';
-                      }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
-                        <path d="M19.05 4.91A9.816 9.816 0 0 0 12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01z"/>
-                      </svg>
-                      WhatsApp
-                    </button>
+                    {/* Mini círculos de colores */}
+                    {product.coloresDisponibles && product.coloresDisponibles.length > 0 && (
+                      <div style={{ 
+                        display: 'flex', 
+                        gap: '6px', 
+                        marginBottom: '12px',
+                        flexWrap: 'wrap',
+                        alignItems: 'center'
+                      }}>
+                        {product.coloresDisponibles.slice(0, 5).map((color, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '50%',
+                              background: color,
+                              border: color === '#ffffff' || color === '#fff' ? '1px solid #ddd' : 'none',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                              transition: 'transform 0.2s',
+                              cursor: 'pointer'
+                            }}
+                            title={color}
+                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          />
+                        ))}
+                        {product.coloresDisponibles.length > 5 && (
+                          <span style={{ 
+                            fontSize: '12px', 
+                            color: '#86868b',
+                            fontWeight: '500'
+                          }}>
+                            +{product.coloresDisponibles.length - 5}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Descripción */}
+                    <p style={{ 
+                      fontSize: '14px', 
+                      color: '#86868b', 
+                      marginBottom: '12px',
+                      flex: 1,
+                      lineHeight: '1.4'
+                    }}>
+                      {product.descripcion?.substring(0, 60)}...
+                    </p>
+
+                    {/* Precio y botón WhatsApp */}
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      marginTop: 'auto',
+                      gap: '12px'
+                    }}>
+                      <span style={{ 
+                        fontSize: '18px', 
+                        fontWeight: '600',
+                        color: '#1d1d1f'
+                      }}>
+                        ${formatPrice(product.precio)}
+                      </span>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const number = "573207512431";
+                          let text = `Hola, me interesa el producto: ${product.nombre}\n`;
+                          text += `💰 Precio: $${formatPrice(product.precio)}\n`;
+                          if (product.sku) {
+                            text += `📦 SKU: ${product.sku}\n`;
+                          }
+                          text += `\n¿Podrían darme más información?`;
+                          
+                          window.open(
+                            `https://wa.me/${number}?text=${encodeURIComponent(text)}`,
+                            '_blank'
+                          );
+                        }}
+                        style={{
+                          background: '#25D366',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '30px',
+                          padding: '8px 16px',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'transform 0.2s, opacity 0.2s',
+                          fontWeight: '500'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                          e.currentTarget.style.opacity = '0.9';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                          e.currentTarget.style.opacity = '1';
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                          <path d="M19.05 4.91A9.816 9.816 0 0 0 12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01z"/>
+                        </svg>
+                        WhatsApp
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 };
