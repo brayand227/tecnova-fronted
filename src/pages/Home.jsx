@@ -142,7 +142,7 @@ const Home = () => {
         {/* HERO SECTION */}
         <section style={{
           background: 'transparent',
-          padding: '100px 24px 60px',
+          padding: '100px 24px 40px',
           textAlign: 'center'
         }}>
           <div className="container">
@@ -155,13 +155,17 @@ const Home = () => {
               fontSize: '20px',
               color: 'rgba(255, 255, 255, 0.8)',
               maxWidth: '600px',
-              margin: '0 auto 32px'
+              margin: '0 auto'
             }}>
               Innovación en tecnología
             </p>
+          </div>
+        </section>
 
-            {/* BUSCADOR */}
-            <div style={{ maxWidth: '500px', margin: '0 auto 20px auto' }}>
+        {/* BUSCADOR - ARRIBA (justo después del hero) */}
+        <section style={{ padding: '0 24px 40px' }}>
+          <div className="container">
+            <div style={{ maxWidth: '600px', margin: '0 auto' }}>
               <input
                 type="text"
                 placeholder="🔍 Buscar productos..."
@@ -176,13 +180,12 @@ const Home = () => {
                   border: 'none',
                   fontSize: '16px',
                   outline: 'none',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  marginBottom: '16px'
                 }}
               />
-            </div>
 
-            {/* SELECTOR DE ORDEN */}
-            <div style={{ maxWidth: '300px', margin: '0 auto' }}>
+              {/* SELECTOR DE ORDEN */}
               <select
                 className="form-input"
                 style={{ 
@@ -207,7 +210,7 @@ const Home = () => {
 
         {/* CATEGORIAS - CON ESTILO GLASSMORPHISM */}
         {categories.length > 0 && (
-          <section style={{ padding: '60px 24px' }}>
+          <section style={{ padding: '40px 24px' }}>
             <div className="container">
               <h2 style={{ 
                 marginBottom: '32px',
@@ -231,16 +234,37 @@ const Home = () => {
 
         {/* PRODUCTOS */}
         <section style={{
-          padding: '60px 24px',
+          padding: '40px 24px 60px',
           background: 'transparent'
         }}>
           <div className="container">
-            <h2 style={{ 
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
               marginBottom: '32px',
-              color: 'white'
+              flexWrap: 'wrap',
+              gap: '16px'
             }}>
-              Productos {filteredProductsList.length > 0 && `(${filteredProductsList.length})`}
-            </h2>
+              <h2 style={{ 
+                color: 'white',
+                margin: 0
+              }}>
+                Productos {filteredProductsList.length > 0 && `(${filteredProductsList.length})`}
+              </h2>
+              
+              {searchTerm && (
+                <span style={{
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '14px',
+                  background: 'rgba(255,255,255,0.15)',
+                  padding: '6px 12px',
+                  borderRadius: '20px'
+                }}>
+                  Resultados para: "{searchTerm}"
+                </span>
+              )}
+            </div>
 
             {filteredProductsList.length === 0 ? (
               <div style={{
