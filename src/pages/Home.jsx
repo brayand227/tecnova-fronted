@@ -8,7 +8,6 @@ const Home = () => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('nombre');
 
   const navigate = useNavigate();
@@ -41,13 +40,6 @@ const Home = () => {
   // Filtrar y ordenar productos
   const filteredProducts = () => {
     let filtered = [...products];
-
-    if (searchTerm) {
-      filtered = filtered.filter(p =>
-        p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.descripcion && p.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
 
     switch (sortBy) {
       case 'precio_asc':
@@ -137,7 +129,8 @@ const Home = () => {
           <div className="container">
             <h1 style={{ 
               marginBottom: '16px',
-              color: 'white'
+              color: 'white',
+              fontSize: 'clamp(32px, 8vw, 56px)'
             }}>TECNOVA</h1>
             <p style={{
               fontSize: '20px',
@@ -148,44 +141,30 @@ const Home = () => {
               Innovación en tecnología
             </p>
 
-            {/* BUSCADOR */}
-            <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-              <input
-                type="text"
-                placeholder="Buscar productos..."
+            {/* SOLO SELECTOR DE ORDEN (sin buscador) */}
+            <div style={{ maxWidth: '300px', margin: '0 auto' }}>
+              <select
                 className="form-input"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ 
-                  marginBottom: '16px',
-                  background: 'rgba(255, 255, 255, 0.9)'
+                  width: '100%',
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  padding: '12px 16px',
+                  borderRadius: '30px',
+                  border: 'none',
+                  cursor: 'pointer'
                 }}
-              />
-
-              <div style={{
-                display: 'flex',
-                gap: '12px',
-                justifyContent: 'center'
-              }}>
-                <select
-                  className="form-input"
-                  style={{ 
-                    width: 'auto',
-                    background: 'rgba(255, 255, 255, 0.9)'
-                  }}
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                >
-                  <option value="nombre">Ordenar por nombre</option>
-                  <option value="precio_asc">Precio: menor a mayor</option>
-                  <option value="precio_desc">Precio: mayor a menor</option>
-                </select>
-              </div>
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="nombre">Ordenar por nombre</option>
+                <option value="precio_asc">Precio: menor a mayor</option>
+                <option value="precio_desc">Precio: mayor a menor</option>
+              </select>
             </div>
           </div>
         </section>
 
-        {/* CATEGORIAS */}
+        {/* CATEGORIAS - CON ESTILO GLASSMORPHISM */}
         {categories.length > 0 && (
           <section style={{ padding: '60px 24px' }}>
             <div className="container">
