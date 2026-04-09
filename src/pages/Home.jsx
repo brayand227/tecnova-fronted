@@ -74,13 +74,37 @@ const Home = () => {
 
   return (
     <div>
-      {/* HERO */}
+      {/* HERO CON LOGO DE FONDO */}
       <section style={{
         background: 'linear-gradient(to bottom, #f5f5f7, #ffffff)',
         padding: '100px 24px 60px',
-        textAlign: 'center'
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div className="container">
+        {/* Logo de fondo */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          opacity: 0.05,
+          pointerEvents: 'none',
+          zIndex: 0
+        }}>
+          <img 
+            src="/logo.jpeg"
+            alt="TECNOVA"
+            style={{
+              width: '400px',
+              maxWidth: '80vw',
+              height: 'auto'
+            }}
+          />
+        </div>
+        
+        {/* Contenido (se mantiene encima) */}
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <h1 style={{ marginBottom: '16px' }}>TECNOVA</h1>
           <p style={{
             fontSize: '20px',
@@ -88,7 +112,7 @@ const Home = () => {
             maxWidth: '600px',
             margin: '0 auto 32px'
           }}>
-            Innovacion en tecnología
+            Innovación en tecnología
           </p>
 
           {/* BUSCADOR */}
