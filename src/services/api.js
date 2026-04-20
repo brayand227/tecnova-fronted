@@ -3,7 +3,7 @@ import axios from 'axios';
 // ✅ Configuración dinámica: desarrollo local vs producción
 const isProduction = import.meta.env.PROD;
 const API_URL = isProduction 
-  ? 'https://tecnova-backend-production.up.railway.app/api'  // Producción
+  ? 'https://tecnova-backend.onrender.com/api'  // 👈 CAMBIA A RENDER
   : 'http://localhost:8080/api';  // Desarrollo local
 
 console.log(`🌐 API URL: ${API_URL} (${isProduction ? 'producción' : 'desarrollo'})`);
@@ -25,7 +25,6 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
-    // Log para depuración (opcional, puedes comentarlo después)
     console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`, {
       hasToken: !!token,
       tokenPreview: token ? `${token.substring(0, 30)}...` : null
@@ -57,7 +56,6 @@ api.interceptors.response.use(
       console.warn('⚠️ Sesión expirada o no autorizada');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Redirigir a login si es necesario
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
