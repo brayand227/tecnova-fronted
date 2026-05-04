@@ -118,7 +118,7 @@ const AdminProductos = () => {
       };
 
       if (editingProduct) {
-        await api.put(`/admin/productos/${editingProduct.id}`, productoData);
+      await api.patch(`/admin/productos/${editingProduct.id}`, productoData);
         setSuccessMessage('✅ Producto actualizado exitosamente');
       } else {
         await api.post('/admin/productos', productoData);
