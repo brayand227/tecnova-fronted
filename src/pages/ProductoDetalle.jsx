@@ -8,8 +8,9 @@ const ProductoDetalle = () => {
   const navigate = useNavigate();
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedColor, setSelectedColor] = useState(null);
   const [selectedVariante, setSelectedVariante] = useState(null);
-  const [variantes, setVariantes] = useState([]);
+  const [variantesPorColor, setVariantesPorColor] = useState({});
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
@@ -22,11 +23,27 @@ const ProductoDetalle = () => {
       const data = response.data;
       setProducto(data);
       
-      // Cargar variantes
-      const variantesList = data.variantes || [];
-      setVariantes(variantesList);
-      if (variantesList.length > 0) {
-        setSelectedVariante(variantesList[0]);
+      // Agrupar variantes por color
+      const agrupadas = {};
+      (data.variantes || []).forEach(v => {
+        if (!agrupadas[v.color]) {
+          agrupadas[v.color] = {
+            color: v.color,
+            colorCodigo: v.colorCodigo,
+            variantes: []
+          };
+        }
+        agrupadas[v.color].variantes.push(v);
+      });
+      
+      setVariantesPorColor(agrupadas);
+      
+      // Seleccionar el primer color y su primera variante por defecto
+      const colores = Object.keys(agrupadas);
+      if (colores.length > 0) {
+        const primerColor = agrupadas[colores[0]];
+        setSelectedColor(primerColor);
+        setSelectedVariante(primerColor.variantes[0]);
       }
 
       // Productos relacionados
@@ -42,10 +59,22 @@ const ProductoDetalle = () => {
     }
   };
 
+  const handleColorChange = (colorData) => {
+    setSelectedColor(colorData);
+    // Seleccionar la primera variante (primer almacenamiento) por defecto
+    setSelectedVariante(colorData.variantes[0]);
+  };
+
+  const handleAlmacenamientoChange = (variante) => {
+    setSelectedVariante(variante);
+  };
+
+  // Obtener la imagen actual (de la variante seleccionada o la principal)
+  const currentImage = selectedVariante?.imagenUrl || producto?.imagenUrl;
+
   const handleWhatsApp = () => {
     const number = "573207512431";
     let text = `Hola, me interesa el producto: *${producto.nombre}*\n`;
-    
     if (selectedVariante) {
       text += `🎨 Color: ${selectedVariante.color}\n`;
       text += `💾 Almacenamiento: ${selectedVariante.almacenamiento}\n`;
@@ -53,7 +82,6 @@ const ProductoDetalle = () => {
     } else {
       text += `💰 Precio: $${formatPrice(producto.precio)}\n`;
     }
-    
     if (producto.sku) text += `📦 SKU: ${producto.sku}\n`;
     text += `\n¿Podrían darme más información?`;
     
@@ -69,9 +97,6 @@ const ProductoDetalle = () => {
   }
 
   if (!producto) return null;
-
-  // Obtener la imagen a mostrar (de la variante seleccionada o la principal)
-  const currentImage = selectedVariante?.imagenUrl || producto.imagenUrl;
 
   return (
     <div style={{ paddingTop: '80px' }}>
@@ -111,77 +136,77 @@ const ProductoDetalle = () => {
           <div>
             <h1 style={{ fontSize: '40px', marginBottom: '16px' }}>{producto.nombre}</h1>
             
-            {/* Precio (dinámico según variante) */}
+            {/* Precio dinámico según variante seleccionada */}
             <div style={{ marginBottom: '24px' }}>
               <span style={{ fontSize: '32px', fontWeight: '600' }}>
                 ${formatPrice(selectedVariante?.precio || producto.precio)}
               </span>
             </div>
 
-            {/* Selector de variantes */}
-            {variantes.length > 0 && (
+            {/* Selector de colores (cada color aparece UNA sola vez) */}
+            {Object.keys(variantesPorColor).length > 0 && (
               <div style={{ marginBottom: '32px' }}>
-                {/* Selector de color */}
-                <div style={{ marginBottom: '16px' }}>
-                  <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>
-                    Color: <span style={{ color: '#0066cc' }}>{selectedVariante?.color || 'Selecciona'}</span>
-                  </h3>
-                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                    {variantes.map((variante, idx) => (
-                      <div
-                        key={idx}
-                        onClick={() => setSelectedVariante(variante)}
-                        style={{
-                          cursor: 'pointer',
-                          textAlign: 'center'
-                        }}
-                      >
-                        <div style={{
-                          width: '56px',
-                          height: '56px',
-                          borderRadius: '50%',
-                          background: variante.colorCodigo || '#ccc',
-                          border: selectedVariante?.id === variante.id ? '3px solid #0066cc' : '2px solid #e5e5e7',
-                          transition: 'all 0.2s',
-                          transform: selectedVariante?.id === variante.id ? 'scale(1.1)' : 'scale(1)',
-                          boxShadow: selectedVariante?.id === variante.id ? '0 0 0 2px white, 0 0 0 4px #0066cc' : 'none'
-                        }} />
-                        <div style={{
-                          fontSize: '12px',
-                          marginTop: '8px',
-                          color: selectedVariante?.id === variante.id ? '#0066cc' : '#86868b'
-                        }}>
-                          {variante.color}
-                        </div>
+                <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>
+                  Color: <span style={{ color: '#0066cc' }}>{selectedColor?.color || 'Selecciona'}</span>
+                </h3>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  {Object.values(variantesPorColor).map((colorData) => (
+                    <div
+                      key={colorData.color}
+                      onClick={() => handleColorChange(colorData)}
+                      style={{
+                        cursor: 'pointer',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '50%',
+                        background: colorData.colorCodigo || '#ccc',
+                        border: selectedColor?.color === colorData.color ? '3px solid #0066cc' : '2px solid #e5e5e7',
+                        transition: 'all 0.2s',
+                        transform: selectedColor?.color === colorData.color ? 'scale(1.1)' : 'scale(1)',
+                        boxShadow: selectedColor?.color === colorData.color ? '0 0 0 2px white, 0 0 0 4px #0066cc' : 'none'
+                      }} />
+                      <div style={{
+                        fontSize: '12px',
+                        marginTop: '8px',
+                        color: selectedColor?.color === colorData.color ? '#0066cc' : '#86868b'
+                      }}>
+                        {colorData.color}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
+              </div>
+            )}
 
-                {/* Selector de almacenamiento */}
-                <div>
-                  <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>
-                    Almacenamiento: <span style={{ color: '#0066cc' }}>{selectedVariante?.almacenamiento || 'Selecciona'}</span>
-                  </h3>
-                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    {variantes.map((variante, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedVariante(variante)}
-                        style={{
-                          padding: '10px 20px',
-                          borderRadius: '30px',
-                          border: selectedVariante?.id === variante.id ? '2px solid #0066cc' : '1px solid #d2d2d7',
-                          background: selectedVariante?.id === variante.id ? '#f0f7ff' : 'white',
-                          cursor: 'pointer',
-                          fontSize: '14px',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        {variante.almacenamiento}
-                      </button>
-                    ))}
-                  </div>
+            {/* Selector de almacenamiento (solo para el color seleccionado) */}
+            {selectedColor && selectedColor.variantes.length > 1 && (
+              <div style={{ marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>
+                  Almacenamiento: <span style={{ color: '#0066cc' }}>{selectedVariante?.almacenamiento || 'Selecciona'}</span>
+                </h3>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  {selectedColor.variantes.map((variante) => (
+                    <button
+                      key={variante.id}
+                      onClick={() => handleAlmacenamientoChange(variante)}
+                      style={{
+                        padding: '10px 20px',
+                        borderRadius: '30px',
+                        border: selectedVariante?.id === variante.id ? '2px solid #0066cc' : '1px solid #d2d2d7',
+                        background: selectedVariante?.id === variante.id ? '#f0f7ff' : 'white',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        transition: 'all 0.2s',
+                        fontFamily: 'inherit'
+                      }}
+                    >
+                      {variante.almacenamiento}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -232,12 +257,12 @@ const ProductoDetalle = () => {
         {relatedProducts.length > 0 && (
           <div style={{ marginBottom: '60px' }}>
             <h2 style={{ fontSize: '28px', marginBottom: '24px' }}>También te puede interesar</h2>
-            <div className="grid grid-4">
+            <div className="grid grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
               {relatedProducts.map(rel => (
                 <div 
                   key={rel.id} 
                   className="card"
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: 'pointer', background: 'white', borderRadius: '16px', padding: '16px' }}
                   onClick={() => navigate(`/producto/${rel.id}`)}
                 >
                   <img 
