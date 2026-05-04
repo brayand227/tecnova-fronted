@@ -100,6 +100,23 @@ const AdminProductos = () => {
     setSuccessMessage('');
 
     try {
+      // Preparar variantes: para productos nuevos, enviar sin id; para edición, conservar ids si existen
+      const variantesParaEnviar = variantes.map(v => {
+        const varianteData = {
+          color: v.color,
+          colorCodigo: v.colorCodigo,
+          almacenamiento: v.almacenamiento,
+          precio: v.precio,
+          stock: v.stock,
+          imagenUrl: v.imagenUrl
+        };
+        // Si la variante tiene un id real (no es temporal de Date.now), incluirlo
+        if (v.id && typeof v.id === 'number' && v.id.toString().length < 10) {
+          varianteData.id = v.id;
+        }
+        return varianteData;
+      });
+
       const productoData = {
         ...formData,
         precio: parseFloat(formData.precio),
@@ -107,18 +124,11 @@ const AdminProductos = () => {
         categoria: formData.categoria?.id
           ? { id: parseInt(formData.categoria.id) }
           : null,
-        variantes: variantes.map(v => ({
-          color: v.color,
-          colorCodigo: v.colorCodigo,
-          almacenamiento: v.almacenamiento,
-          precio: v.precio,
-          stock: v.stock,
-          imagenUrl: v.imagenUrl
-        }))
+        variantes: variantesParaEnviar
       };
 
       if (editingProduct) {
-      await api.patch(`/admin/productos/${editingProduct.id}`, productoData);
+        await api.patch(`/admin/productos/${editingProduct.id}`, productoData);
         setSuccessMessage('✅ Producto actualizado exitosamente');
       } else {
         await api.post('/admin/productos', productoData);
@@ -150,6 +160,7 @@ const AdminProductos = () => {
       sku: producto.sku || '',
       especificaciones: producto.especificaciones || ''
     });
+    // Cargar variantes con sus IDs reales
     setVariantes(producto.variantes || []);
     setShowForm(true);
   };
@@ -353,7 +364,7 @@ const AdminProductos = () => {
                 )}
                 
                 {variantes.map((variante, idx) => (
-                  <div key={variante.id} style={{ 
+                  <div key={variante.id || idx} style={{ 
                     border: '1px solid #e5e5e7', 
                     borderRadius: '16px', 
                     padding: '20px', 
@@ -635,5 +646,6 @@ const AdminProductos = () => {
     </div>
   );
 };
+
 
 export default AdminProductos;
