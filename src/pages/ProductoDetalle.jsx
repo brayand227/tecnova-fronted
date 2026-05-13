@@ -23,7 +23,7 @@ const ProductoDetalle = () => {
       const data = response.data;
       setProducto(data);
       
-      // Agrupar variantes por color
+      // ✅ Agrupar variantes por color (cada color aparece UNA sola vez)
       const agrupadas = {};
       (data.variantes || []).forEach(v => {
         if (!agrupadas[v.color]) {
@@ -61,15 +61,13 @@ const ProductoDetalle = () => {
 
   const handleColorChange = (colorData) => {
     setSelectedColor(colorData);
-    // Seleccionar la primera variante (primer almacenamiento) por defecto
-    setSelectedVariante(colorData.variantes[0]);
+    setSelectedVariante(colorData.variantes[0]); // Selecciona el primer almacenamiento del color
   };
 
   const handleAlmacenamientoChange = (variante) => {
     setSelectedVariante(variante);
   };
 
-  // Obtener la imagen actual (de la variante seleccionada o la principal)
   const currentImage = selectedVariante?.imagenUrl || producto?.imagenUrl;
 
   const handleWhatsApp = () => {
@@ -143,7 +141,7 @@ const ProductoDetalle = () => {
               </span>
             </div>
 
-            {/* Selector de colores (cada color aparece UNA sola vez) */}
+            {/* ✅ Selector de colores (cada color aparece UNA sola vez) */}
             {Object.keys(variantesPorColor).length > 0 && (
               <div style={{ marginBottom: '32px' }}>
                 <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>
@@ -182,7 +180,7 @@ const ProductoDetalle = () => {
               </div>
             )}
 
-            {/* Selector de almacenamiento (solo para el color seleccionado) */}
+            {/* ✅ Selector de almacenamiento (solo para el color seleccionado) */}
             {selectedColor && selectedColor.variantes.length > 1 && (
               <div style={{ marginBottom: '32px' }}>
                 <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>
@@ -200,8 +198,7 @@ const ProductoDetalle = () => {
                         background: selectedVariante?.id === variante.id ? '#f0f7ff' : 'white',
                         cursor: 'pointer',
                         fontSize: '14px',
-                        transition: 'all 0.2s',
-                        fontFamily: 'inherit'
+                        transition: 'all 0.2s'
                       }}
                     >
                       {variante.almacenamiento}
