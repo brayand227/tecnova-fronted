@@ -10,21 +10,37 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  // ✅ Cargar estado INICIAL desde localStorage (esto es la clave)
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  
+  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+  const [loading, setLoading] = useState(true); // Importante: empezar en true
 
+  // ✅ Verificar autenticación al cargar la página
   useEffect(() => {
-    if (token) {
-      try {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        setUser(userData);
-      } catch (e) {
-        console.error('Error parsing user data', e);
+    const checkAuth = () => {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      
+      if (storedToken && storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          setToken(storedToken);
+          setUser(userData);
+        } catch (e) {
+          console.error('Error parsing user data', e);
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       }
-    }
-    setLoading(false);
-  }, [token]);
+      setLoading(false);
+    };
+    
+    checkAuth();
+  }, []);
 
   const login = async (username, password) => {
     try {
@@ -58,6 +74,20 @@ export const AuthProvider = ({ children }) => {
   const isAdmin = () => {
     return user?.roles?.includes('ROLE_ADMIN');
   };
+
+  // ✅ Mostrar loading mientras verificamos autenticación
+  if (loading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center' 
+      }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
 
   const value = {
     user,

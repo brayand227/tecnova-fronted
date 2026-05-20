@@ -104,6 +104,22 @@ const Navbar = () => {
 
 
 function AppContent() {
+  const { loading } = useAuth(); // ✅ Añadido: obtener el estado de loading
+
+  // ✅ Mostrar loading mientras se verifica autenticación
+  if (loading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center' 
+      }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Navbar />
